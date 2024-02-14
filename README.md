@@ -1,4 +1,4 @@
-# Effective Tray for D&D Fifth Edition
+# Effective Tray (for D&D Fifth Edition)
 A module for dnd5e on foundryvtt that allows the effects tray to be used more effectively.
 
 ## What it does 
