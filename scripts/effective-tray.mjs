@@ -6,7 +6,7 @@ export class effectiveTray {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton); 
   };
 
-  // Expand effect tray on chat messages
+  // Expand effects tray on chat messages
   static _expandEffect(message, html) {
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
