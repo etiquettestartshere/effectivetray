@@ -1,0 +1,21 @@
+import { MODULE } from "./const.mjs";
+
+export class moduleSettings {
+
+  static init() {
+    moduleSettings._chatSettings();
+  };
+  
+  static _chatSettings() {
+    game.settings.register(MODULE, 'expandEffect', {
+      name: "EFFECTIVETRAY.ExpandEffectSettingName",
+      hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: false,
+      onChange: false
+    });
+  };  
+};

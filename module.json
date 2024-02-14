@@ -1,0 +1,36 @@
+{
+  "id": "effectivetray",
+  "title": "Effective Tray for D&D Fifth Edition",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "11"
+  },
+  "esmodules": ["setup.mjs"],
+  "styles": ["styles/styles.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json",
+      "flags": {}
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "authors": [
+    {
+      "name": "alakshana",
+      "discord": "alakshana",
+      "url": "https://github.com/etiquettestartshere",
+      "flags": {}
+    }
+  ]
+}
