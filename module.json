@@ -1,7 +1,7 @@
 {
   "id": "effectivetray",
   "title": "Effective Tray",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "compatibility": {
     "minimum": "11",
     "verified": "11"
@@ -26,6 +26,8 @@
     }
   ],
   "flags": {"hotReload": {"extensions": ["css"], "paths": ["styles/effectivetray.css"]}},
+  "manifest": "https://github.com/etiquettestartshere/effectivetray/releases/latest/downloa.module.json",
+  "download": "https://github.com/etiquettestartshere/effectivetray/releases/latest/downloa.module.zip",
   "authors": [
     {
       "name": "alakshana",
