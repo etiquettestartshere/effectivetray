@@ -8,6 +8,15 @@
   },
   "esmodules": ["setup.mjs"],
   "styles": ["styles/effectivetray.css"],
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {"minimum": "3.0.0", "maximum": "3.0.9"}
+      }
+    ]
+  },
   "languages": [
     {
       "lang": "en",
@@ -16,15 +25,6 @@
       "flags": {}
     }
   ],
-  "relationships": {
-    "systems": [
-      {
-        "id": "dnd5e",
-        "type": "system",
-        "compatibility": {"minimum": "3.0.0", "maximum": "3.5.0"}
-      }
-    ]
-  },
   "flags": {"hotReload": {"extensions": ["css"], "paths": ["styles/effectivetray.css"]}},
   "authors": [
     {
