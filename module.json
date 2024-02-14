@@ -7,7 +7,7 @@
     "verified": "11"
   },
   "esmodules": ["setup.mjs"],
-  "styles": ["styles/styles.css"],
+  "styles": ["styles/effectivetray.css"],
   "languages": [
     {
       "lang": "en",
@@ -21,10 +21,11 @@
       {
         "id": "dnd5e",
         "type": "system",
-        "compatibility": {}
+        "compatibility": {"minimum": "3.0.0", "maximum": "3.5.0"}
       }
     ]
   },
+  "flags": {"hotReload": {"extensions": ["css"], "paths": ["styles/effectivetray.css"]}},
   "authors": [
     {
       "name": "alakshana",
