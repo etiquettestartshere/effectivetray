@@ -20,6 +20,7 @@ export class effectiveTray {
   static async _removeTransfer(item) {
     if (!game.settings.get(MODULE, "removeTransfer")) return;
     const effects = item.effects.contents;
+    if (!effects) return;
     for (const effect of effects) {
       const transfer = effect.transfer;
       const duration = effect.duration;
