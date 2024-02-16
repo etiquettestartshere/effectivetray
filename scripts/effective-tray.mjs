@@ -54,7 +54,7 @@ export class effectiveTray {
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
         </li>
-      `
+      `;
       tray.querySelector('ul[class="effects collapsible-content unlist"]').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
         const actors = new Set();
