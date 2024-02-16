@@ -29,6 +29,32 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, 'ignoreNPC', {
+      name: "EFFECTIVETRAY.IgnoreNPCSettingName",
+      hint: "EFFECTIVETRAY.IgnoreNPCSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, 'filterPermission', {
+      name: "EFFECTIVETRAY.FilterPermissionSettingName",
+      hint: "EFFECTIVETRAY.FilterPermissionSettingHint",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 0,
+      requiresReload: true,
+      choices: {
+        0: "None",
+        1: "Limited",
+        2: "Observer"
+      }
+    });
+
     game.settings.register(MODULE, 'systemDefault', {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",
