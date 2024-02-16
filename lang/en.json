@@ -1,4 +1,8 @@
 {
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
-  "EFFECTIVETRAY.ExpandEffectSettingHint": "Expand the Effects tray of chat messages for easier application."
+  "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
+  "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor' from timed effects.",
+  "EFFECTIVETRAY.RemoveTransferSettingHint": "On the time of creation (drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
+  "EFFECTIVETRAY.SystemDefaultSettingName": "Use Default Effects Tray",
+  "EFFECTIVETRAY.SystemDefaultSettingHint": "Retain default system behavior (if you just want the expanded tray)."
 }
