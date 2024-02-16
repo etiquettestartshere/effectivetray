@@ -3,7 +3,8 @@ import { MODULE } from "./const.mjs";
 export class effectiveTray {
   static init () {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
-    Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton); 
+    Hooks.on("preCreateItem", effectiveTray._removeTransfer);
+    if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
   };
 
   // Expand effects tray on chat messages
@@ -15,6 +16,19 @@ export class effectiveTray {
     html.querySelector('ul[class="effects collapsible-content unlist"]').setAttribute("style", "height: auto;");
   };
 
+  // Remove transfer from all effects with duration
+  static async _removeTransfer(item) {
+    if (!game.settings.get(MODULE, "removeTransfer")) return;
+    const effects = item.effects.contents;
+    for (const effect of effects) {
+      const transfer = effect.transfer;
+      const duration = effect.duration;
+      if (transfer && (duration.seconds || duration.turns || duration.rounds)) {
+        await effect.updateSource({"transfer": false});
+      };
+    };
+  };
+
   // Make the tray effective
   static async _effectButton(message, html) {
     const tray = html.querySelector('.effects-tray');
@@ -22,9 +36,11 @@ export class effectiveTray {
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
     const uuid = message.flags.dnd5e?.use?.itemUuid;
-    const item = await fromUuid(uuid ?? "");
-    const effects = item.effects.contents
-    for ( const effect of effects) {
+    const item = await fromUuid(uuid);
+    if (!item) return;
+    const effects = item.effects.contents;
+    if (!effects) return;
+    for (const effect of effects) {
       let label;
       effect.duration.duration ? label = effect.duration.label : label = "";
       const contents = `
@@ -33,27 +49,27 @@ export class effectiveTray {
           <div class="name-stacked">
             <span class="title">${effect.name}</span>
             <span class="subtitle">${label}</span>
-          </div>  
+          </div>
           <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="DND5E.EffectsApplyTokens" aria-label="Apply to selected tokens">
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
-        </li>  
+        </li>
       `
       tray.querySelector('ul[class="effects collapsible-content unlist"]').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
         const actors = new Set();
-        for(const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
+        for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
         for (const actor of actors) {
           const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
-          if ( existingEffect ) {
-            existingEffect.update({ disabled: !existingEffect.disabled })
+          if (existingEffect) {
+            existingEffect.update({ disabled: !existingEffect.disabled });
           } else {
             const effectData = foundry.utils.mergeObject(effect.toObject(), {
               disabled: false,
               transfer: false,
               origin: effect.uuid
             });
-            ActiveEffect.implementation.create(effectData, {parent: actor});    
+            ActiveEffect.implementation.create(effectData, {parent: actor});
           }
         };
       });
