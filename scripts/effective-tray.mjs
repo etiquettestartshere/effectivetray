@@ -33,12 +33,10 @@ export class effectiveTray {
   // Make the tray effective
   static async _effectButton(message, html) {
     const actor = game.actors?.get(message.speaker?.actor);
-    const userId = game.user.id;
-    const permission = actor?.ownership[userId];
     const filter = game.settings.get(MODULE, "filterPermission");
-    if (!game.user.isGM && game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && permission !== 3) return;
-    if (!game.user.isGM && filter === 2 && permission < 2) return;
-    if (!game.user.isGM && filter === 1 && permission < 1) return;
+    if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)) return;
+    if (filter === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+    if (filter === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
