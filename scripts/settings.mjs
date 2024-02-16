@@ -25,7 +25,7 @@ export class moduleSettings {
       config: true,
       type: Boolean,
       default: false,
-      requiresReload: true,
+      requiresReload: false,
       onChange: false
     });
 
