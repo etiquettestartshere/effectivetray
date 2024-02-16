@@ -1,7 +1,7 @@
 {
   "id": "effectivetray",
   "title": "Effective Tray",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "compatibility": {
     "minimum": "11",
     "verified": "11"
