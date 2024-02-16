@@ -2,7 +2,7 @@
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
   "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
   "EFFECTIVETRAY.FilterPermissionSettingName": "Require Permission",
-  "EFFECTIVETRAY.FilterPermissionSettingHint": "Require users have the selected permissions to see and apply effects from the tray.",
+  "EFFECTIVETRAY.FilterPermissionSettingHint": "Require users have the selected permissions or higher to see and apply effects from the tray.",
   "EFFECTIVETRAY.IgnoreNPCSettingName": "Hide NPCs",
   "EFFECTIVETRAY.IgnoreNPCSettingHint": "Disallow users from seeing or interacting with effects from NPCs they do not own.",
   "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor' from timed effects.",
