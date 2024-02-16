@@ -36,7 +36,7 @@ export class effectiveTray {
     const userId = game.user.id;
     const permission = actor?.ownership[userId];
     const filter = game.settings.get(MODULE, "filterPermission");
-    if (!game.user.isGM && game.settings.get(MODULE, "ignoreNPC") && actor.type === "npc" && permission !== 3) return;
+    if (!game.user.isGM && game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && permission !== 3) return;
     if (!game.user.isGM && filter === 2 && permission < 2) return;
     if (!game.user.isGM && filter === 1 && permission < 1) return;
     const tray = html.querySelector('.effects-tray');
