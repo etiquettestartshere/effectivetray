@@ -5,6 +5,7 @@ A module for dnd5e on foundryvtt that allows the effects tray to be used more ef
 Allows users to apply active effects to selected tokens from chat cards even if they do not own the actor that made the chat card.
 - Adds a setting (on by default) that starts the effects tray in its expanded position.
 - Adds a setting (on by default) that removes 'Apply Effect to Actor' from any effect with a duration when any item with an effect is created (dragged & droppped).
+- Allows filtering based on actor type and permissions (it can ignore NPCs not owned by the user, or require limited or observer permissions. Defaults to none).
 - Adds a setting (off by default) to disable the main function of the module, in order to just use the additional features.
 
 ## What it doesn't do
