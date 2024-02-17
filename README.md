@@ -10,3 +10,12 @@ Allows users to apply active effects to selected tokens from chat cards even if 
 
 ## What it doesn't do
 Allow users to apply active effects to targets, or to tokens they do not own.
+
+___
+###### **Technical Details**
+
+**Scope:** Replaces the effects tray in chat messages with a similar one that allows all users, not just GMs or the chat message's creator, to apply active effects to tokens they control (and have selected) by looping over all messages in the "dnd5e.renderChatMessage" hook.
+
+**License:** MIT License.
+
+**Additional Info:** Thanks to Zhell for help with adding actors to a set, and to Flix for encouragement.
