@@ -55,6 +55,22 @@ export class moduleSettings {
       }
     });
 
+    game.settings.register(MODULE, 'filterDisposition', {
+      name: "EFFECTIVETRAY.FilterDispositionSettingName",
+      hint: "EFFECTIVETRAY.FilterDispositionSettingHint",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 0,
+      requiresReload: true,
+      choices: {
+        0: "None",
+        1: "Secret",
+        2: "Hostile",
+        3: "Neutral"
+      }
+    });
+
     game.settings.register(MODULE, 'systemDefault', {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",

@@ -33,10 +33,15 @@ export class effectiveTray {
   // Make the tray effective
   static async _effectButton(message, html) {
     const actor = game.actors?.get(message.speaker?.actor);
-    const filter = game.settings.get(MODULE, "filterPermission");
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)) return;
-    if (filter === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
-    if (filter === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
+    const filterDis = game.settings.get(MODULE, "filterDisposition")
+    const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
+    if (token && filterDis === 1 && token.disposition <= -2 && !token.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)) return;
+    if (token && filterDis === 2 && token.disposition <= -1 && !token.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)) return;
+    if (token && filterDis === 3 && token.disposition <= 0 && !token.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)) return;
+    const filterPer = game.settings.get(MODULE, "filterPermission");
+    if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+    if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
