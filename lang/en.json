@@ -1,6 +1,12 @@
 {
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
   "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
+  "EFFECTIVETRAY.FilterDispositionSettingName": "Filter by Disposition",
+  "EFFECTIVETRAY.FilterDispositionSettingHint": "Hide effects from users if they originate from tokens with the selected (or worse) disposition.",
+  "EFFECTIVETRAY.FilterPermissionSettingName": "Filter by Permission",
+  "EFFECTIVETRAY.FilterPermissionSettingHint": "Hide effects from users if they originate from actors which the users lack the selected permissions (or below) for.",
+  "EFFECTIVETRAY.IgnoreNPCSettingName": "Filter NPCs",
+  "EFFECTIVETRAY.IgnoreNPCSettingHint": "Hide effects from users if they originate from NPCs they do not own.",
   "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor' from timed effects.",
   "EFFECTIVETRAY.RemoveTransferSettingHint": "On the time of creation (drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
   "EFFECTIVETRAY.SystemDefaultSettingName": "Use Default Effects Tray",

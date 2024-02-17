@@ -20,6 +20,7 @@ export class effectiveTray {
   static async _removeTransfer(item) {
     if (!game.settings.get(MODULE, "removeTransfer")) return;
     const effects = item.effects.contents;
+    if (!effects) return;
     for (const effect of effects) {
       const transfer = effect.transfer;
       const duration = effect.duration;
@@ -31,6 +32,18 @@ export class effectiveTray {
 
   // Make the tray effective
   static async _effectButton(message, html) {
+    const actor = game.actors?.get(message.speaker?.actor);
+    const actorOwner = actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
+    if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actorOwner) return;
+    const filterDis = game.settings.get(MODULE, "filterDisposition")
+    const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
+    const tokenOwner = token?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
+    if (token && filterDis === 1 && token.disposition <= -2 && !tokenOwner) return;
+    if (token && filterDis === 2 && token.disposition <= -1 && !tokenOwner) return;
+    if (token && filterDis === 3 && token.disposition <= 0 && !tokenOwner) return;
+    const filterPer = game.settings.get(MODULE, "filterPermission");
+    if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+    if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
@@ -54,7 +67,7 @@ export class effectiveTray {
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
         </li>
-      `
+      `;
       tray.querySelector('ul[class="effects collapsible-content unlist"]').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
         const actors = new Set();

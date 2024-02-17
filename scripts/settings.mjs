@@ -7,7 +7,7 @@ export class moduleSettings {
   };
 
   static _chatSettings() {
-    game.settings.register(MODULE, 'expandEffect', {
+    game.settings.register(MODULE, "expandEffect", {
       name: "EFFECTIVETRAY.ExpandEffectSettingName",
       hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
       scope: "client",
@@ -18,7 +18,7 @@ export class moduleSettings {
       onChange: false
     });
 
-    game.settings.register(MODULE, 'removeTransfer', {
+    game.settings.register(MODULE, "removeTransfer", {
       name: "EFFECTIVETRAY.RemoveTransferSettingName",
       hint: "EFFECTIVETRAY.RemoveTransferSettingHint",
       scope: "world",
@@ -29,7 +29,49 @@ export class moduleSettings {
       onChange: false
     });
 
-    game.settings.register(MODULE, 'systemDefault', {
+    game.settings.register(MODULE, "ignoreNPC", {
+      name: "EFFECTIVETRAY.IgnoreNPCSettingName",
+      hint: "EFFECTIVETRAY.IgnoreNPCSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, "filterPermission", {
+      name: "EFFECTIVETRAY.FilterPermissionSettingName",
+      hint: "EFFECTIVETRAY.FilterPermissionSettingHint",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 0,
+      requiresReload: true,
+      choices: {
+        0: "None",
+        1: "Limited",
+        2: "Observer"
+      }
+    });
+
+    game.settings.register(MODULE, "filterDisposition", {
+      name: "EFFECTIVETRAY.FilterDispositionSettingName",
+      hint: "EFFECTIVETRAY.FilterDispositionSettingHint",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 0,
+      requiresReload: true,
+      choices: {
+        0: "None",
+        1: "Secret",
+        2: "Hostile",
+        3: "Neutral"
+      }
+    });
+
+    game.settings.register(MODULE, "systemDefault", {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",
       scope: "world",
