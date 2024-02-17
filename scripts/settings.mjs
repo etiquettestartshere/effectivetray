@@ -7,7 +7,7 @@ export class moduleSettings {
   };
 
   static _chatSettings() {
-    game.settings.register(MODULE, 'expandEffect', {
+    game.settings.register(MODULE, "expandEffect", {
       name: "EFFECTIVETRAY.ExpandEffectSettingName",
       hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
       scope: "client",
@@ -18,7 +18,7 @@ export class moduleSettings {
       onChange: false
     });
 
-    game.settings.register(MODULE, 'removeTransfer', {
+    game.settings.register(MODULE, "removeTransfer", {
       name: "EFFECTIVETRAY.RemoveTransferSettingName",
       hint: "EFFECTIVETRAY.RemoveTransferSettingHint",
       scope: "world",
@@ -29,7 +29,7 @@ export class moduleSettings {
       onChange: false
     });
 
-    game.settings.register(MODULE, 'ignoreNPC', {
+    game.settings.register(MODULE, "ignoreNPC", {
       name: "EFFECTIVETRAY.IgnoreNPCSettingName",
       hint: "EFFECTIVETRAY.IgnoreNPCSettingHint",
       scope: "world",
@@ -40,7 +40,7 @@ export class moduleSettings {
       onChange: false
     });
 
-    game.settings.register(MODULE, 'filterPermission', {
+    game.settings.register(MODULE, "filterPermission", {
       name: "EFFECTIVETRAY.FilterPermissionSettingName",
       hint: "EFFECTIVETRAY.FilterPermissionSettingHint",
       scope: "world",
@@ -55,7 +55,7 @@ export class moduleSettings {
       }
     });
 
-    game.settings.register(MODULE, 'filterDisposition', {
+    game.settings.register(MODULE, "filterDisposition", {
       name: "EFFECTIVETRAY.FilterDispositionSettingName",
       hint: "EFFECTIVETRAY.FilterDispositionSettingHint",
       scope: "world",
@@ -71,7 +71,7 @@ export class moduleSettings {
       }
     });
 
-    game.settings.register(MODULE, 'systemDefault', {
+    game.settings.register(MODULE, "systemDefault", {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",
       scope: "world",
