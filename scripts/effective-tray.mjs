@@ -34,6 +34,11 @@ export class effectiveTray {
   static async _effectButton(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
+    const uuid = message.flags.dnd5e?.use?.itemUuid;
+    const item = await fromUuid(uuid);
+    if (!item) return;
+    const effects = item.effects.contents;
+    if (!effects) return;
     const actor = game.actors?.get(message.speaker?.actor);
     const actorOwner = actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actorOwner) return;
@@ -48,11 +53,6 @@ export class effectiveTray {
     if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
-    const uuid = message.flags.dnd5e?.use?.itemUuid;
-    const item = await fromUuid(uuid);
-    if (!item) return;
-    const effects = item.effects.contents;
-    if (!effects) return;
     for (const effect of effects) {
       let label;
       effect.duration.duration ? label = effect.duration.label : label = "";
