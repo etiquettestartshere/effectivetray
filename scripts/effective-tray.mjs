@@ -40,17 +40,21 @@ export class effectiveTray {
     const effects = item.effects.contents;
     if (!effects) return;
     const actor = game.actors?.get(message.speaker?.actor);
-    const actorOwner = actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
+    const actorOwner = actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actorOwner) return;
     const filterDis = game.settings.get(MODULE, "filterDisposition")
-    const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
-    const tokenOwner = token?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
-    if (token && filterDis === 1 && token.disposition <= -2 && !tokenOwner) return;
-    else if (token && filterDis === 2 && token.disposition <= -1 && !tokenOwner) return;
-    else if (token && filterDis === 3 && token.disposition <= 0 && !tokenOwner) return;
+    if (filterDis > 0) {
+      const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
+      const tokenOwner = token?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
+      if (token && filterDis === 3 && token.disposition <= 0 && !tokenOwner) return;
+      else if (token && filterDis === 2 && token.disposition <= -1 && !tokenOwner) return;
+      else if (token && filterDis === 1 && token.disposition <= -2 && !tokenOwner) return;
+    };
     const filterPer = game.settings.get(MODULE, "filterPermission");
-    if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
-    else if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
+    if (filterPer > 0) {
+      if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
+      else if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+    };
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
     for (const effect of effects) {
