@@ -46,11 +46,11 @@ export class effectiveTray {
     const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
     const tokenOwner = token?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
     if (token && filterDis === 1 && token.disposition <= -2 && !tokenOwner) return;
-    if (token && filterDis === 2 && token.disposition <= -1 && !tokenOwner) return;
-    if (token && filterDis === 3 && token.disposition <= 0 && !tokenOwner) return;
+    else if (token && filterDis === 2 && token.disposition <= -1 && !tokenOwner) return;
+    else if (token && filterDis === 3 && token.disposition <= 0 && !tokenOwner) return;
     const filterPer = game.settings.get(MODULE, "filterPermission");
     if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
-    if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
+    else if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
     for (const effect of effects) {
@@ -83,7 +83,7 @@ export class effectiveTray {
               origin: effect.uuid
             });
             ActiveEffect.implementation.create(effectData, {parent: actor});
-          }
+          };
         };
       });
     };
