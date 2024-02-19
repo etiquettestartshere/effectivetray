@@ -2,7 +2,7 @@ import { MODULE } from "./const.mjs";
 
 export class effectiveTray {
   static init () {
-    if (!game.settings.get(MODULE, "expandEffect")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
+    if (game.settings.get(MODULE, "expandEffect")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
   };
