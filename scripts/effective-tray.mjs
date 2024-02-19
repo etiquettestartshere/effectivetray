@@ -35,8 +35,8 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const uuid = message.flags.dnd5e?.use?.itemUuid;
+    if (!uuid) return;
     const item = await fromUuid(uuid);
-    if (!item) return;
     const effects = item.effects.contents;
     if (!effects) return;
     const actor = game.actors?.get(message.speaker?.actor);
