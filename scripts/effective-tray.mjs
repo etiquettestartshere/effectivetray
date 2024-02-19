@@ -2,14 +2,13 @@ import { MODULE } from "./const.mjs";
 
 export class effectiveTray {
   static init () {
-    Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
+    if (!game.settings.get(MODULE, "expandEffect")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
   };
 
   // Expand effects tray on chat messages
   static _expandEffect(message, html) {
-    if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     tray.classList.remove("collapsed");
@@ -40,15 +39,13 @@ export class effectiveTray {
     const effects = item.effects.contents;
     if (!effects) return;
     const actor = game.actors?.get(message.speaker?.actor);
-    const actorOwner = actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
-    if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actorOwner) return;
+    if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
     const filterDis = game.settings.get(MODULE, "filterDisposition")
     if (filterDis) {
       const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
-      const tokenOwner = token?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER);
-      if (token && filterDis === 3 && token.disposition <= 0 && !tokenOwner) return;
-      else if (token && filterDis === 2 && token.disposition <= -1 && !tokenOwner) return;
-      else if (token && filterDis === 1 && token.disposition <= -2 && !tokenOwner) return;
+      if (token && filterDis === 3 && token.disposition <= 0 && !token?.isOwner) return;
+      else if (token && filterDis === 2 && token.disposition <= -1 && !token?.isOwner) return;
+      else if (token && filterDis === 1 && token.disposition <= -2 && !token?.isOwner) return;
     };
     const filterPer = game.settings.get(MODULE, "filterPermission");
     if (filterPer) {
