@@ -2,13 +2,14 @@ import { MODULE } from "./const.mjs";
 
 export class effectiveTray {
   static init () {
-    if (game.settings.get(MODULE, "expandEffect")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
+    Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
   };
 
   // Expand effects tray on chat messages
   static _expandEffect(message, html) {
+    if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     tray.classList.remove("collapsed");
