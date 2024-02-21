@@ -1,7 +1,7 @@
-import { MODULE } from "./const.mjs";
+import { MODULE, socketID } from "./const.mjs";
 
 export class effectiveTray {
-  static init () {
+  static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
@@ -75,19 +75,68 @@ export class effectiveTray {
         const actors = new Set();
         for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
         for (const actor of actors) {
-          const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
-          if (existingEffect) {
-            existingEffect.update({ disabled: !existingEffect.disabled });
-          } else {
-            const effectData = foundry.utils.mergeObject(effect.toObject(), {
-              disabled: false,
-              transfer: false,
-              origin: effect.uuid
-            });
-            ActiveEffect.implementation.create(effectData, {parent: actor});
-          };
+          _applyEffects(actor, effect);
+        };
+      });
+      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
+        event.stopPropagation();
+        event.preventDefault();
+      });
+      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', () => {
+        const targets = Array.from(game.user.targets).map(i=>i.document.uuid)
+        if (!targets) return;
+        if (game.user.isGM) {
+          const actors = new Set();
+          for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
+          for (const actor of actors) {
+            _applyEffects(actor, effect);
+          }
+        } else {
+          const origin = effect.uuid;
+          game.socket.emit(socketID, {type: "firstCase", data: {origin, targets}});
         };
       });
     };
+  };
+};
+
+export async function _effectSocket(data) {
+  if (game.user !== game.users.activeGM) return;
+  const targets = data.data.targets;
+  const effect = await fromUuid(data.data.origin);
+  const actors = new Set();
+  for (const target of targets) {
+    const token = await fromUuid(target)
+    const targetActor = token.actor;
+    if (target) actors.add(targetActor);
+  };
+  for (const actor of actors) {
+    _applyEffects(actor, effect);
+  };
+};
+
+export class effectiveSocket {
+  static init() {
+    game.socket.on(socketID, (data) => {
+      switch (data.type) {
+        case "firstCase":
+          _effectSocket(data);
+          break;
+      }
+    });
+  };
+};
+
+export async function _applyEffects(actor, effect) {
+  const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
+  if (existingEffect) {
+    existingEffect.update({ disabled: !existingEffect.disabled });
+  } else {
+    const effectData = foundry.utils.mergeObject(effect.toObject(), {
+      disabled: false,
+      transfer: false,
+      origin: effect.uuid
+    });
+    ActiveEffect.implementation.create(effectData, {parent: actor});
   };
 };
