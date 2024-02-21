@@ -18,4 +18,4 @@ ___
 
 **License:** MIT License.
 
-**Additional Info:** Thanks to Zhell for help with adding actors to a set, and to Flix for encouragement. Thanks also to ChaosOS for help with sockets, and DrentalBot for help with help suppressing the system's context menu.
+**Additional Info:** Thanks to Zhell for help with adding actors to a set, and to Flix for much encouragement. Thanks also to ChaosOS for help with sockets, and DrentalBot for help with help suppressing the system's context menu.
