@@ -72,19 +72,21 @@ export class effectiveTray {
       `;
       tray.querySelector('ul[class="effects collapsible-content unlist"]').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
+        if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
         const actors = new Set();
         for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
         for (const actor of actors) {
           _applyEffects(actor, effect);
         };
       });
+      if (!game.settings.get(MODULE, "allowTarget")) return;
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
         event.stopPropagation();
         event.preventDefault();
       });
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', () => {
+        if (!game.user.targets.size) return ui.notifications.info("You don't have a target.");
         const targets = Array.from(game.user.targets).map(i=>i.document.uuid)
-        if (!targets) return;
         if (game.user.isGM) {
           const actors = new Set();
           for (const token of game.user.targets) if (token.actor) actors.add(token.actor);

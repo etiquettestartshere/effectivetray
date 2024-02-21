@@ -7,6 +7,17 @@ export class moduleSettings {
   };
 
   static _chatSettings() {
+    game.settings.register(MODULE, "allowTarget", {
+      name: "EFFECTIVETRAY.AllowTargetSettingName",
+      hint: "EFFECTIVETRAY.AllowTargetSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "expandEffect", {
       name: "EFFECTIVETRAY.ExpandEffectSettingName",
       hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
