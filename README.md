@@ -13,7 +13,7 @@ Allows users to apply active effects to tokens from chat cards even if they do n
 ___
 ###### **Technical Details**
 
-**Scope:** Replaces the effects tray in chat messages with a similar one that allows all users, not just GMs or the chat message's creator, to apply active effects to tokens they control (and have selected) by looping over all messages in the "dnd5e.renderChatMessage" hook.
+**Scope:** Replaces the effects tray in chat messages with a similar one that allows all users, not just GMs or the chat message's creator, to apply active effects to tokens they control (and have selected) by looping over all messages in the "dnd5e.renderChatMessage" hook. Additionally, transmits effect and target data via sockets to allow an active GM client to apply effects to a non GM user's targets.
 
 **License:** MIT License.
 

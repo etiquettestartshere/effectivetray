@@ -103,7 +103,7 @@ export class effectiveTray {
 };
 
 // Make the GM client apply effects to the socket emitter's targets
-export async function _effectSocket(data) {
+async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const targets = data.data.targets;
   const effect = await fromUuid(data.data.origin);
@@ -132,7 +132,7 @@ export class effectiveSocket {
 };
 
 // Apply effect, or toggle it if it exists
-export async function _applyEffects(actor, effect) {
+async function _applyEffects(actor, effect) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
   if (existingEffect) {
     if (!game.settings.get(MODULE, "deleteInstead")) existingEffect.update({ disabled: !existingEffect.disabled });
