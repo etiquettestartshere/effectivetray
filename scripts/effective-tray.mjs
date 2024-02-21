@@ -135,8 +135,8 @@ export class effectiveSocket {
 export async function _applyEffects(actor, effect) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
   if (existingEffect) {
-    if (game.settings.get(MODULE, "deleteInstead")) existingEffect.delete();
-    else existingEffect.update({ disabled: !existingEffect.disabled });
+    if (!game.settings.get(MODULE, "deleteInstead")) existingEffect.update({ disabled: !existingEffect.disabled });
+    else existingEffect.delete();
   } else {
     const effectData = foundry.utils.mergeObject(effect.toObject(), {
       disabled: false,
