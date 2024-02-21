@@ -65,7 +65,7 @@ export class effectiveTray {
             <span class="title">${effect.name}</span>
             <span class="subtitle">${label}</span>
           </div>
-          <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="DND5E.EffectsApplyTokens" aria-label="Apply to selected tokens">
+          <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="EFFECTIVETRAY.EffectsApplyTokens" aria-label="Apply to selected tokens">
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
         </li>
