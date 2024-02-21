@@ -1,7 +1,7 @@
-import { MODULE } from "./const.mjs";
+import { MODULE, socketID } from "./const.mjs";
 
 export class effectiveTray {
-  static init () {
+  static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
@@ -65,29 +65,84 @@ export class effectiveTray {
             <span class="title">${effect.name}</span>
             <span class="subtitle">${label}</span>
           </div>
-          <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="DND5E.EffectsApplyTokens" aria-label="Apply to selected tokens">
+          <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="EFFECTIVETRAY.EffectsApplyTokens" aria-label="Apply to selected tokens">
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
         </li>
       `;
       tray.querySelector('ul[class="effects collapsible-content unlist"]').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
+        if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
         const actors = new Set();
         for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
         for (const actor of actors) {
-          const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
-          if (existingEffect) {
-            existingEffect.update({ disabled: !existingEffect.disabled });
-          } else {
-            const effectData = foundry.utils.mergeObject(effect.toObject(), {
-              disabled: false,
-              transfer: false,
-              origin: effect.uuid
-            });
-            ActiveEffect.implementation.create(effectData, {parent: actor});
-          };
+          _applyEffects(actor, effect);
+        };
+      });
+      if (!game.settings.get(MODULE, "allowTarget")) return;
+      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
+        event.stopPropagation();
+        event.preventDefault();
+      });
+      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', () => {
+        if (!game.user.targets.size) return ui.notifications.info("You don't have a target.");
+        const targets = Array.from(game.user.targets).map(i=>i.document.uuid)
+        if (game.user.isGM) {
+          const actors = new Set();
+          for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
+          for (const actor of actors) {
+            _applyEffects(actor, effect);
+          }
+        } else {
+          const origin = effect.uuid;
+          game.socket.emit(socketID, {type: "firstCase", data: {origin, targets}});
         };
       });
     };
+  };
+};
+
+// Make the GM client apply effects to the socket emitter's targets
+export async function _effectSocket(data) {
+  if (game.user !== game.users.activeGM) return;
+  const targets = data.data.targets;
+  const effect = await fromUuid(data.data.origin);
+  const actors = new Set();
+  for (const target of targets) {
+    const token = await fromUuid(target)
+    const targetActor = token.actor;
+    if (target) actors.add(targetActor);
+  };
+  for (const actor of actors) {
+    _applyEffects(actor, effect);
+  };
+};
+
+// Register the socket
+export class effectiveSocket {
+  static init() {
+    game.socket.on(socketID, (data) => {
+      switch (data.type) {
+        case "firstCase":
+          _effectSocket(data);
+          break;
+      }
+    });
+  };
+};
+
+// Apply effect, or toggle it if it exists
+export async function _applyEffects(actor, effect) {
+  const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
+  if (existingEffect) {
+    if (!game.settings.get(MODULE, "deleteInstead")) existingEffect.update({ disabled: !existingEffect.disabled });
+    else existingEffect.delete();
+  } else {
+    const effectData = foundry.utils.mergeObject(effect.toObject(), {
+      disabled: false,
+      transfer: false,
+      origin: effect.uuid
+    });
+    ActiveEffect.implementation.create(effectData, {parent: actor});
   };
 };

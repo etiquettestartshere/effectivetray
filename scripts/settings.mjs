@@ -7,25 +7,25 @@ export class moduleSettings {
   };
 
   static _chatSettings() {
-    game.settings.register(MODULE, "expandEffect", {
-      name: "EFFECTIVETRAY.ExpandEffectSettingName",
-      hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
-      scope: "client",
-      config: true,
-      type: Boolean,
-      default: true,
-      requiresReload: false,
-      onChange: false
-    });
-
-    game.settings.register(MODULE, "removeTransfer", {
-      name: "EFFECTIVETRAY.RemoveTransferSettingName",
-      hint: "EFFECTIVETRAY.RemoveTransferSettingHint",
+    game.settings.register(MODULE, "allowTarget", {
+      name: "EFFECTIVETRAY.AllowTargetSettingName",
+      hint: "EFFECTIVETRAY.AllowTargetSettingHint",
       scope: "world",
       config: true,
       type: Boolean,
       default: true,
-      requiresReload: false,
+      requiresReload: true,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, "deleteInstead", {
+      name: "EFFECTIVETRAY.DeleteInsteadSettingName",
+      hint: "EFFECTIVETRAY.DeleteInsteadSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
       onChange: false
     });
 
@@ -79,6 +79,28 @@ export class moduleSettings {
       type: Boolean,
       default: false,
       requiresReload: true,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, "expandEffect", {
+      name: "EFFECTIVETRAY.ExpandEffectSettingName",
+      hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: false,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, "removeTransfer", {
+      name: "EFFECTIVETRAY.RemoveTransferSettingName",
+      hint: "EFFECTIVETRAY.RemoveTransferSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: false,
       onChange: false
     });
   };

@@ -1,4 +1,9 @@
 {
+  "EFFECTIVETRAY.AllowTargetSettingName": "Transfer to Target",
+  "EFFECTIVETRAY.AllowTargetSettingHint": "Allow users to transfer effects to targets with right click.",
+  "EFFECTIVETRAY.DeleteInsteadSettingName": "Delete Instead of Toggle",
+  "EFFECTIVETRAY.DeleteInsteadSettingHint": "Attempting to transfer an effect to an actor that has it already will delete it rather than toggling it.",
+  "EFFECTIVETRAY.EffectsApplyTokens": "Left click: Apply to selected tokens, Right click: Apply to targets",
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
   "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
   "EFFECTIVETRAY.FilterDispositionSettingName": "Filter by Disposition",
@@ -10,5 +15,5 @@
   "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor' from timed effects.",
   "EFFECTIVETRAY.RemoveTransferSettingHint": "On the time of creation (drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
   "EFFECTIVETRAY.SystemDefaultSettingName": "Use Default Effects Tray",
-  "EFFECTIVETRAY.SystemDefaultSettingHint": "Retain default system behavior (if you just want the expanded tray)."
+  "EFFECTIVETRAY.SystemDefaultSettingHint": "Retain default system behavior (if you only want one or both of the settings below this one)."
 }
