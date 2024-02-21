@@ -1,4 +1,8 @@
 {
+  "EFFECTIVETRAY.AllowTargetSettingName": "Transfer to Target",
+  "EFFECTIVETRAY.AllowTargetSettingHint": "Allow users to transfer effects to targets with right click.",
+  "EFFECTIVETRAY.DeleteInsteadSettingName": "Delete Instead of Toggle",
+  "EFFECTIVETRAY.DeleteInsteadSettingHint": "Attempting to transfer an effect to an actor that has it already will delete it rather than toggling it.",
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
   "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
   "EFFECTIVETRAY.FilterDispositionSettingName": "Filter by Disposition",

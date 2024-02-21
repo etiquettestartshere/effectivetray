@@ -29,6 +29,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "deleteInstead", {
+      name: "EFFECTIVETRAY.DeleteInsteadSettingName",
+      hint: "EFFECTIVETRAY.DeleteInsteadSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "removeTransfer", {
       name: "EFFECTIVETRAY.RemoveTransferSettingName",
       hint: "EFFECTIVETRAY.RemoveTransferSettingHint",
