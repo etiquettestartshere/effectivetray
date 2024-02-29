@@ -55,7 +55,7 @@ export class effectiveTray {
     };
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
-    const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens"
+    const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens";
     for (const effect of effects) {
       let label;
       effect.duration.duration ? label = effect.duration.label : label = "";
