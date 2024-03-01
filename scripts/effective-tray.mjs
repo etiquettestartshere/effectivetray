@@ -57,8 +57,7 @@ export class effectiveTray {
     if (old) for (const oldEffect of old) oldEffect.remove();
     const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens";
     for (const effect of effects) {
-      let label;
-      effect.duration.duration ? label = effect.duration.label : label = "";
+      const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect._id} data-transferred=${effect.transfer}>
           <img class="gold-icon" alt=${effect.name} src=${effect.icon}>
