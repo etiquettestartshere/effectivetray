@@ -25,7 +25,7 @@
       "flags": {}
     }
   ],
-  "flags": {"hotReload": {"extensions": ["css"], "paths": ["styles/effectivetray.css"]}},
+  "flags": {"hotReload": {"extensions": ["css", "json"], "paths": ["styles/effectivetray.css", "lang"]}},
   "socket": true,
   "url": "https://github.com/etiquettestartshere/effectivetray",
   "manifest": "https://github.com/etiquettestartshere/effectivetray/releases/latest/download/module.json",
