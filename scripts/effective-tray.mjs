@@ -17,7 +17,7 @@ export class effectiveTray {
   };
 
   // Remove transfer from all effects with duration
-  static async _removeTransfer(item) {
+  static _removeTransfer(item) {
     if (!game.settings.get(MODULE, "removeTransfer")) return;
     const effects = item.effects.contents;
     if (!effects) return;
@@ -25,7 +25,7 @@ export class effectiveTray {
       const transfer = effect.transfer;
       const duration = effect.duration;
       if (transfer && (duration.seconds || duration.turns || duration.rounds)) {
-        await effect.updateSource({"transfer": false});
+        effect.updateSource({"transfer": false});
       };
     };
   };
@@ -132,7 +132,7 @@ export class effectiveSocket {
 };
 
 // Apply effect, or toggle it if it exists
-async function _applyEffects(actor, effect) {
+function _applyEffects(actor, effect) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
   if (existingEffect) {
     if (!game.settings.get(MODULE, "deleteInstead")) existingEffect.update({ disabled: !existingEffect.disabled });
