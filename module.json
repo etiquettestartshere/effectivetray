@@ -6,7 +6,7 @@
     "minimum": "11",
     "verified": "11"
   },
-  "esmodules": ["setup.mjs"],
+  "esmodules": ["scripts/setup.mjs"],
   "styles": ["styles/effectivetray.css"],
   "relationships": {
     "systems": [
