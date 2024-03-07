@@ -6,8 +6,10 @@
 
 ## Branches to Target
 - For small fixes, target the branch with the version the smallest increment up from the current release (generally N.N.X). Right now, that is:
-### **1.0.2**.
+### **1.0.2**
+
 - For fixes in line with a major system release, target the next major release (generally N.X.N). Right now, that is: 
-### **1.1.0**.
+### **1.1.0**
+
 - Generally speaking, make your PR targets branches with current milestones.
 ※ *If the above information becomes inapplicable, perhaps because I forgot to update it, just target the main branch.*
