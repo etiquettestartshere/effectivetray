@@ -34,10 +34,10 @@ export class effectiveTray {
   static async _effectButton(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
-    const uuid = message.flags.dnd5e?.use?.itemUuid;
+    const uuid = message.flags?.dnd5e?.use?.itemUuid;
     if (!uuid) return;
     const item = await fromUuid(uuid);
-    const effects = item.effects.contents;
+    const effects = item?.effects?.contents;
     if (!effects) return;
     const actor = game.actors?.get(message.speaker?.actor);
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
