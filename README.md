@@ -10,9 +10,9 @@ Allows users to apply active effects to tokens from chat cards even if they do n
 - Adds a setting (off by default) that deletes an effect rather than toggling it if a user attempts to transfer a duplicate effect.
 - Adds a setting (off by default) to disable the main function of the module, in order to just use the additional features.
 
-![image](https://github.com/etiquettestartshere/effectivetray/assets/148253744/6680fe92-f0ec-4918-8a80-00b5e1cd3764) 
+![image](https://github.com/etiquettestartshere/effectivetray/blob/main/img/application.webp)
 
-![image](https://github.com/etiquettestartshere/effectivetray/assets/148253744/86d58d55-52e4-4941-a845-f3f722919d0b)
+![image](https://github.com/etiquettestartshere/effectivetray/blob/main/img/settings.webp)
 
 ___
 ###### **Technical Details**
