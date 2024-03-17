@@ -11,6 +11,7 @@ Allows users to apply active effects to tokens from chat cards even if they do n
 - Adds a setting (off by default) to disable the main function of the module, in order to just use the additional features.
 
 ![image](https://github.com/etiquettestartshere/effectivetray/blob/main/img/application.webp)
+
 ![image](https://github.com/etiquettestartshere/effectivetray/blob/main/img/settings.webp)
 
 ___
