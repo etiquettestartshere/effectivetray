@@ -7,6 +7,3 @@
   grid-template-rows: 1fr;
   transition: grid-template-rows 250ms ease;
 }
-.dnd5e2 :is(.card-tray, .effects-tray):has(.effects:empty) {
-  display: none;
-}
