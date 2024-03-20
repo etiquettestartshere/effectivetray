@@ -1,1 +1,12 @@
 
+.dnd5e2 :is(.card-tray, .effects-tray).ETuncollapsed label .fa-caret-down {
+  transform: rotate(0deg);
+}
+.dnd5e2 :is(.card-tray, .effects-tray).ETuncollapsed .collapsible-content {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 250ms ease;
+}
+.dnd5e2 :is(.card-tray, .effects-tray):has(.effects:empty) {
+  display: none;
+}

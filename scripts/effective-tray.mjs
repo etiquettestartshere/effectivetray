@@ -9,11 +9,16 @@ export class effectiveTray {
 
   // Expand effects tray on chat messages
   static _expandEffect(message, html) {
+    const damage = html.querySelector('damage-application.hidden');
+    if (damage) damage.classList.remove("hidden");
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     tray.classList.remove("collapsed");
-    html.querySelector('ul[class="effects collapsible-content unlist"]').setAttribute("style", "height: auto;");
+    tray.classList.add("ETuncollapsed");
+    tray.querySelector('i.fa-caret-down').addEventListener('click', () => {
+      tray.classList.remove("ETuncollapsed");
+    });
   };
 
   // Remove transfer from all effects with duration
@@ -70,7 +75,7 @@ export class effectiveTray {
           </button>
         </li>
       `;
-      tray.querySelector('ul[class="effects collapsible-content unlist"]').insertAdjacentHTML("beforeend", contents);
+      tray.querySelector('ul.effects.unlist.wrapper').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
         if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
         const actors = new Set();
@@ -135,8 +140,12 @@ export class effectiveSocket {
 function _applyEffects(actor, effect) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
   if (existingEffect) {
-    if (!game.settings.get(MODULE, "deleteInstead")) existingEffect.update({ disabled: !existingEffect.disabled });
-    else existingEffect.delete();
+    if (!game.settings.get(MODULE, "deleteInstead")) {
+      return existingEffect.update({
+        ...effect.constructor.getInitialDuration(),
+        disabled: false
+      });
+    } else existingEffect.delete();
   } else {
     const effectData = foundry.utils.mergeObject(effect.toObject(), {
       disabled: false,
