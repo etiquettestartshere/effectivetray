@@ -4,13 +4,13 @@ export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
-    if (!game.settings.get(MODULE, "systemDefault")) Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
+    if (!game.settings.get(MODULE, "systemDefault")) {
+      Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
+    };
   };
 
   // Expand effects tray on chat messages
   static _expandEffect(message, html) {
-    const damage = html.querySelector('damage-application.hidden');
-    if (damage) damage.classList.remove("hidden");
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
@@ -103,6 +103,42 @@ export class effectiveTray {
           game.socket.emit(socketID, {type: "firstCase", data: {origin, targets}});
         };
       });
+    };
+  };
+};
+
+export class effectiveDamage {
+  static init() {
+    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
+    if (!game.settings.get(MODULE, "systemDefault")) {
+      Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageTray);
+    };  
+  };
+
+  static async _expandDamage(message, html) {
+    if (!game.settings.get(MODULE, "expandDamage")) return;
+    await new Promise(r => setTimeout(r, 100));
+    const tray = html.querySelector('.damage-tray');
+    if (!tray) return;
+    tray.classList.remove("collapsed");
+    tray.classList.add("ETuncollapsed");
+    tray.querySelector('i.fa-caret-down').addEventListener('click', () => {
+      tray.classList.remove("ETuncollapsed");
+    });
+  };
+
+  static _damageTray(message, html) {
+    if (message.flags?.dnd5e?.roll?.type === "damage") {
+      const damageApplication = document.createElement("damage-application");
+      damageApplication.classList.add("dnd5e2");
+      if ( !game.user.isGM ) {
+        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
+          value: roll.total,
+          type: roll.options.type,
+          properties: new Set(roll.options.properties ?? [])
+        }));
+        html.querySelector(".message-content").appendChild(damageApplication);
+      };
     };
   };
 };
