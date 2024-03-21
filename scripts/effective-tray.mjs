@@ -185,12 +185,8 @@ export class effectiveDamage {
         event.stopPropagation();
         tray.classList.remove("collapsed");
         tray.classList.add("et-uncollapsed");
-        console.warn("if");
       } else {
-        //tray.classList.add("collapsed")
-        //if (!html.querySelector(".damage-tray.collapsed")) tray.classList.add("collapsed");
         if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
-        console.warn("else");
       };
     });
   };
