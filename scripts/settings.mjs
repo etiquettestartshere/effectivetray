@@ -18,6 +18,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "damageTarget", {
+      name: "EFFECTIVETRAY.DamageTargetSettingName",
+      hint: "EFFECTIVETRAY.DamageTargetSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "deleteInstead", {
       name: "EFFECTIVETRAY.DeleteInsteadSettingName",
       hint: "EFFECTIVETRAY.DeleteInsteadSettingHint",
@@ -71,6 +82,17 @@ export class moduleSettings {
       }
     });
 
+    game.settings.register(MODULE, "dontCloseOnPress", {
+      name: "EFFECTIVETRAY.DontCloseOnPressSettingName",
+      hint: "EFFECTIVETRAY.DontCloseOnPressSettingHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "systemDefault", {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",
@@ -100,7 +122,7 @@ export class moduleSettings {
       config: true,
       type: Boolean,
       default: true,
-      requiresReload: false,
+      requiresReload: true,
       onChange: false
     });
 
@@ -111,7 +133,7 @@ export class moduleSettings {
       config: true,
       type: Boolean,
       default: true,
-      requiresReload: false,
+      requiresReload: true,
       onChange: false
     });
 
