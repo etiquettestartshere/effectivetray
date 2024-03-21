@@ -82,6 +82,17 @@ export class moduleSettings {
       }
     });
 
+    game.settings.register(MODULE, "dontCloseOnPress", {
+      name: "EFFECTIVETRAY.DontCloseOnPressSettingName",
+      hint: "EFFECTIVETRAY.DontCloseOnPressSettingHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "systemDefault", {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",

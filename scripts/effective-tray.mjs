@@ -1,5 +1,4 @@
 import { MODULE, socketID } from "./const.mjs";
-import EffectiveDamageApplicationElement from "./damage-application.mjs";
 
 export class effectiveTray {
   static init() {
@@ -8,18 +7,6 @@ export class effectiveTray {
     if (!game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
     };
-  };
-
-  // Expand effects tray on chat messages
-  static _expandEffect(message, html) {
-    if (!game.settings.get(MODULE, "expandEffect")) return;
-    const tray = html.querySelector('.effects-tray');
-    if (!tray) return;
-    tray.classList.remove("collapsed");
-    tray.classList.add("et-uncollapsed");
-    tray.querySelector("i.fa-caret-down").addEventListener('click', () => {
-      tray.classList.remove("et-uncollapsed");
-    });
   };
 
   // Remove transfer from all effects with duration
@@ -89,6 +76,16 @@ export class effectiveTray {
           _applyEffects(actor, effect);
         };
       });
+      if (game.settings.get(MODULE, "dontCloseOnPress")) {
+        const buttons = tray.querySelectorAll("button");
+        for (const button of buttons) {
+          button.addEventListener('click', event => {
+            event.stopPropagation();
+            event.preventDefault();
+            tray.classList.add("et-uncollapsed");
+          });
+        };
+      };
       if (!game.settings.get(MODULE, "allowTarget")) return;
 
       // Handle applying effects to targets: handle it if you can handle it, else emit a socket
@@ -112,6 +109,20 @@ export class effectiveTray {
       });
     };
   };
+
+  // Expand effects tray on chat messages
+  static _expandEffect(message, html) {
+    if (!game.settings.get(MODULE, "expandEffect")) return;
+    const tray = html.querySelector('.effects-tray');
+    if (!tray) return;
+    tray.classList.remove("collapsed");
+    tray.classList.add("et-uncollapsed");
+    tray.addEventListener('click', event => {
+      event.stopPropagation();
+      event.preventDefault();
+      tray.classList.toggle("et-uncollapsed");
+    });
+  };
 };
 
 export class effectiveDamage {
@@ -119,7 +130,26 @@ export class effectiveDamage {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
     if (!game.settings.get(MODULE, "damageDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageTray);
-    };  
+    };
+    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._dontCollapseDamage);
+  };
+
+  // Let users use the damage tray, either without or with the ability to target tokens other than their own
+  static _damageTray(message, html) {
+    if (message.flags?.dnd5e?.roll?.type === "damage") {
+      if (!game.user.isGM) {
+        const damageApplication = game.settings.get(MODULE, "damageTarget") ?
+          document.createElement("effective-damage-application") :
+          document.createElement("damage-application");
+        damageApplication.classList.add("dnd5e2");
+        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
+          value: roll.total,
+          type: roll.options.type,
+          properties: new Set(roll.options.properties ?? [])
+        }));
+        html.querySelector(".message-content").appendChild(damageApplication);
+      };
+    };
   };
 
   // Expand the damage tray
@@ -130,27 +160,32 @@ export class effectiveDamage {
     if (!tray) return;
     tray.classList.remove("collapsed");
     tray.classList.add("et-uncollapsed");
-    tray.querySelector("i.fa-caret-down").addEventListener('click', () => {
-      tray.classList.remove("et-uncollapsed");
+    const upper = tray.querySelector(".roboto-upper");
+    upper.addEventListener('click', event => {
+      event.stopPropagation();
+      event.preventDefault();
+      if (html.querySelector(".damage-tray.et-uncollapsed")) {
+        if (!html.querySelector(".damage-tray.collapsed")) tray.classList.add("collapsed");
+        tray.classList.toggle("et-uncollapsed");
+      } else {
+        if (html.querySelector(".damage-tray.collapsed")) tray.classList.remove("collapsed");
+        tray.classList.add("et-uncollapsed");
+      };
     });
   };
 
-  // Let users use the damage tray, either without or with the ability to target tokens other than their own
-  static _damageTray(message, html) {
-    if (message.flags?.dnd5e?.roll?.type === "damage") {
-      const damageApplication = game.settings.get(MODULE, "damageTarget") ? 
-                                document.createElement("effective-damage-application") : 
-                                document.createElement("damage-application");
-      damageApplication.classList.add("dnd5e2");
-      if ( !game.user.isGM ) {
-        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
-          value: roll.total,
-          type: roll.options.type,
-          properties: new Set(roll.options.properties ?? [])
-        }));
-        html.querySelector(".message-content").appendChild(damageApplication);
-      };
-    };
+  static async _dontCollapseDamage(message, html) {
+    if (!game.settings.get(MODULE, "dontCloseOnPress")) return;
+    await new Promise(r => setTimeout(r, 108));
+    const tray = html.querySelector('.damage-tray');
+    if (!tray) return;
+    const button = tray.querySelector("button.apply-damage");
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      event.preventDefault();
+      tray.classList.add("collapsed");
+      tray.classList.add("et-uncollapsed");
+    });
   };
 };
 
