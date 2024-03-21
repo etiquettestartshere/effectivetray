@@ -174,6 +174,7 @@ export class effectiveDamage {
     });
   };
 
+  // Handle damage tray collapse behavior
   static async _damageCollapse(message, html) {
     await new Promise(r => setTimeout(r, 108));
     const tray = html.querySelector('.damage-tray');
