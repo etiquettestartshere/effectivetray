@@ -122,7 +122,7 @@ export class moduleSettings {
       config: true,
       type: Boolean,
       default: true,
-      requiresReload: false,
+      requiresReload: true,
       onChange: false
     });
 
@@ -133,7 +133,7 @@ export class moduleSettings {
       config: true,
       type: Boolean,
       default: true,
-      requiresReload: false,
+      requiresReload: true,
       onChange: false
     });
 

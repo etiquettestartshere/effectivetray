@@ -131,7 +131,7 @@ export class effectiveDamage {
     if (!game.settings.get(MODULE, "damageDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageTray);
     };
-    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._dontCollapseDamage);
+    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageCollapse);
   };
 
   // Let users use the damage tray, either without or with the ability to target tokens other than their own
@@ -174,20 +174,27 @@ export class effectiveDamage {
     });
   };
 
-  static async _dontCollapseDamage(message, html) {
-    if (!game.settings.get(MODULE, "dontCloseOnPress")) return;
+  static async _damageCollapse(message, html) {
     await new Promise(r => setTimeout(r, 108));
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
     const button = tray.querySelector("button.apply-damage");
     button.addEventListener('click', event => {
-      event.stopPropagation();
-      event.preventDefault();
-      tray.classList.add("collapsed");
-      tray.classList.add("et-uncollapsed");
+      if (game.settings.get(MODULE, "dontCloseOnPress")) {
+        event.preventDefault();
+        event.stopPropagation();
+        tray.classList.remove("collapsed");
+        tray.classList.add("et-uncollapsed");
+        console.warn("if");
+      } else {
+        //tray.classList.add("collapsed")
+        //if (!html.querySelector(".damage-tray.collapsed")) tray.classList.add("collapsed");
+        if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
+        console.warn("else");
+      };
     });
   };
-};
+};  
 
 // Make the GM client apply effects to the socket emitter's targets
 async function _effectSocket(data) {
