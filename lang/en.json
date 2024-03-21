@@ -3,6 +3,8 @@
   "EFFECTIVETRAY.AllowTargetSettingHint": "Allow users to transfer effects to targets with right click.",
   "EFFECTIVETRAY.DamageDefaultSettingName": "Use Default Damage Tray",
   "EFFECTIVETRAY.DamageDefaultSettingHint": "Retain default system behavior (only the GM can see damage trays).",
+  "EFFECTIVETRAY.DamageTargetSettingName": "Damage Target",
+  "EFFECTIVETRAY.DamageTargetSettingHint": "Allow users to damage targets (that they don't own) with the damage tray.",
   "EFFECTIVETRAY.DeleteInsteadSettingName": "Delete Instead of Toggle",
   "EFFECTIVETRAY.DeleteInsteadSettingHint": "Attempting to transfer an effect to an actor that has it already will delete it rather than toggling it.",
   "EFFECTIVETRAY.EffectsApplyTokens": "Left click: Apply to selected tokens, Right click: Apply to targets",

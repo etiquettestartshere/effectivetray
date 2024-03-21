@@ -1,4 +1,5 @@
 import { MODULE, socketID } from "./const.mjs";
+import EffectiveDamageApplicationElement from "./damage-application.mjs";
 
 export class effectiveTray {
   static init() {
@@ -110,7 +111,7 @@ export class effectiveTray {
 export class effectiveDamage {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
-    if (!game.settings.get(MODULE, "systemDefault")) {
+    if (!game.settings.get(MODULE, "damageDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageTray);
     };  
   };
@@ -129,7 +130,9 @@ export class effectiveDamage {
 
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
-      const damageApplication = document.createElement("damage-application");
+      const damageApplication = game.settings.get(MODULE, "damageTarget") ? 
+        document.createElement("effective-damage-application") : 
+        document.createElement("damage-application");
       damageApplication.classList.add("dnd5e2");
       if ( !game.user.isGM ) {
         damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
@@ -159,6 +162,15 @@ async function _effectSocket(data) {
   };
 };
 
+async function _damageSocket(data) {
+  //game.socket.emit(socketID, {type: "secondCase", data: {id, options, dmg}});
+  if (game.user !== game.users.activeGM) return;
+  const id = data.data.id;
+  const options = data.data.options;
+  const dmg = data.data.dmg;
+  _applyTargetDamage(id, options, dmg);
+};
+
 // Register the socket
 export class effectiveSocket {
   static init() {
@@ -167,10 +179,17 @@ export class effectiveSocket {
         case "firstCase":
           _effectSocket(data);
           break;
+        case "secondCase":
+          _damageSocket(data);  
       }
     });
   };
 };
+
+async function _applyTargetDamage(id, options, dmg) {
+  const actor = fromUuidSync(id);
+  await actor.applyDamage(dmg, options);
+}
 
 // Apply effect, or toggle it if it exists
 function _applyEffects(actor, effect) {
