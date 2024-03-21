@@ -1,21 +1,9 @@
 import { socketID } from "./const.mjs";
 
-/**
- * List of multiplier options as tuples containing their numeric value and rendered text.
- * @type {[number, string][]}
- */
 const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2, "2"]];
 
-/**
- * Application to handle applying damage from a chat card.
- */
-
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
-  /**
- * Create a list entry for a single target.
- * @param {string} uuid  UUID of the token represented by this entry.
- * @returns {HTMLLIElement|void}
- */
+
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
 
