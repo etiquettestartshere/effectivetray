@@ -16,9 +16,9 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     tray.classList.remove("collapsed");
-    tray.classList.add("ETuncollapsed");
-    tray.querySelector('i.fa-caret-down').addEventListener('click', () => {
-      tray.classList.remove("ETuncollapsed");
+    tray.classList.add("et-uncollapsed");
+    tray.querySelector("i.fa-caret-down").addEventListener('click', () => {
+      tray.classList.remove("et-uncollapsed");
     });
   };
 
@@ -46,8 +46,10 @@ export class effectiveTray {
     const effects = item?.effects?.contents;
     if (!effects) return;
     const actor = game.actors?.get(message.speaker?.actor);
+
+    // Handle filtering
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
-    const filterDis = game.settings.get(MODULE, "filterDisposition")
+    const filterDis = game.settings.get(MODULE, "filterDisposition");
     if (filterDis) {
       const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
       if (token && filterDis === 3 && token.disposition <= 0 && !token?.isOwner) return;
@@ -59,6 +61,8 @@ export class effectiveTray {
       if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
       else if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
     };
+
+    // Replace the effects in the tray
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
     const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens";
@@ -86,6 +90,8 @@ export class effectiveTray {
         };
       });
       if (!game.settings.get(MODULE, "allowTarget")) return;
+
+      // Handle applying effects to targets: handle it if you can handle it, else emit a socket
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
         event.stopPropagation();
         event.preventDefault();
@@ -116,23 +122,25 @@ export class effectiveDamage {
     };  
   };
 
+  // Expand the damage tray
   static async _expandDamage(message, html) {
     if (!game.settings.get(MODULE, "expandDamage")) return;
     await new Promise(r => setTimeout(r, 100));
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
     tray.classList.remove("collapsed");
-    tray.classList.add("ETuncollapsed");
-    tray.querySelector('i.fa-caret-down').addEventListener('click', () => {
-      tray.classList.remove("ETuncollapsed");
+    tray.classList.add("et-uncollapsed");
+    tray.querySelector("i.fa-caret-down").addEventListener('click', () => {
+      tray.classList.remove("et-uncollapsed");
     });
   };
 
+  // Let users use the damage tray, either without or with the ability to target tokens other than their own
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       const damageApplication = game.settings.get(MODULE, "damageTarget") ? 
-        document.createElement("effective-damage-application") : 
-        document.createElement("damage-application");
+                                document.createElement("effective-damage-application") : 
+                                document.createElement("damage-application");
       damageApplication.classList.add("dnd5e2");
       if ( !game.user.isGM ) {
         damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
@@ -153,7 +161,7 @@ async function _effectSocket(data) {
   const effect = await fromUuid(data.data.origin);
   const actors = new Set();
   for (const target of targets) {
-    const token = await fromUuid(target)
+    const token = await fromUuid(target);
     const targetActor = token.actor;
     if (target) actors.add(targetActor);
   };
@@ -162,8 +170,8 @@ async function _effectSocket(data) {
   };
 };
 
+// Make the GM client apply damage to the socket emitter's targets
 async function _damageSocket(data) {
-  //game.socket.emit(socketID, {type: "secondCase", data: {id, options, dmg}});
   if (game.user !== game.users.activeGM) return;
   const id = data.data.id;
   const options = data.data.options;
@@ -186,11 +194,6 @@ export class effectiveSocket {
   };
 };
 
-async function _applyTargetDamage(id, options, dmg) {
-  const actor = fromUuidSync(id);
-  await actor.applyDamage(dmg, options);
-}
-
 // Apply effect, or toggle it if it exists
 function _applyEffects(actor, effect) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
@@ -209,4 +212,10 @@ function _applyEffects(actor, effect) {
     });
     ActiveEffect.implementation.create(effectData, {parent: actor});
   };
+};
+
+// Apply damage
+async function _applyTargetDamage(id, options, dmg) {
+  const actor = fromUuidSync(id);
+  await actor.applyDamage(dmg, options);
 };
