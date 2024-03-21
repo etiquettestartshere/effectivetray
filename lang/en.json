@@ -1,9 +1,13 @@
 {
   "EFFECTIVETRAY.AllowTargetSettingName": "Transfer to Target",
   "EFFECTIVETRAY.AllowTargetSettingHint": "Allow users to transfer effects to targets with right click.",
+  "EFFECTIVETRAY.DamageDefaultSettingName": "Use Default Damage Tray",
+  "EFFECTIVETRAY.DamageDefaultSettingHint": "Retain default system behavior (only the GM can see damage trays).",
   "EFFECTIVETRAY.DeleteInsteadSettingName": "Delete Instead of Toggle",
   "EFFECTIVETRAY.DeleteInsteadSettingHint": "Attempting to transfer an effect to an actor that has it already will delete it rather than toggling it.",
   "EFFECTIVETRAY.EffectsApplyTokens": "Left click: Apply to selected tokens, Right click: Apply to targets",
+  "EFFECTIVETRAY.ExpandDamageSettingName": "Expand Damage Tray",
+  "EFFECTIVETRAY.ExpandDamageSettingHint": "The damage tray on chat messages starts in its expanded position when the message is created.",
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
   "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
   "EFFECTIVETRAY.FilterDispositionSettingName": "Filter by Disposition",
@@ -12,8 +16,8 @@
   "EFFECTIVETRAY.FilterPermissionSettingHint": "Hide effects from users if they originate from actors which the users lack the selected permissions (or below) for.",
   "EFFECTIVETRAY.IgnoreNPCSettingName": "Filter NPCs",
   "EFFECTIVETRAY.IgnoreNPCSettingHint": "Hide effects from users if they originate from NPCs they do not own.",
-  "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor' from timed effects.",
+  "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor'",
   "EFFECTIVETRAY.RemoveTransferSettingHint": "On the time of creation (drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
   "EFFECTIVETRAY.SystemDefaultSettingName": "Use Default Effects Tray",
-  "EFFECTIVETRAY.SystemDefaultSettingHint": "Retain default system behavior (if you only want one or both of the settings below this one)."
+  "EFFECTIVETRAY.SystemDefaultSettingHint": "Retain default system behavior (if you only want the settings below this one)."
 }

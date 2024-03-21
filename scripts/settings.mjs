@@ -82,9 +82,31 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "damageDefault", {
+      name: "EFFECTIVETRAY.DamageDefaultSettingName",
+      hint: "EFFECTIVETRAY.DamageDefaultSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "expandEffect", {
       name: "EFFECTIVETRAY.ExpandEffectSettingName",
       hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: false,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, "expandDamage", {
+      name: "EFFECTIVETRAY.ExpandDamageSettingName",
+      hint: "EFFECTIVETRAY.ExpandDamageSettingHint",
       scope: "client",
       config: true,
       type: Boolean,
