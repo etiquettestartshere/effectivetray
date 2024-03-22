@@ -1,5 +1,5 @@
 # Effective Tray (for D&D Fifth Edition)
-A module for dnd5e on foundryvtt that allows the effects tray to be used more effectively.
+A module for dnd5e on foundryvtt that allows the effects and damage trays to be used more effectively.
 
 ## For the Effect Tray: Configurable to allow users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own.
 ## For the Damage Tray: Allows users to use the damage tray for targeted and selected tokens they own, or ones they don't own (with a setting.)
