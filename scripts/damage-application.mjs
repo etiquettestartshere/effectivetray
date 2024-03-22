@@ -66,7 +66,6 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   }
 
   async _onApplyDamage(event) {
-    console.warn("hello2323");
     event.preventDefault();
     for (const target of this.targetList.querySelectorAll("[data-target-uuid]")) {
       const token = fromUuidSync(target.dataset.targetUuid);

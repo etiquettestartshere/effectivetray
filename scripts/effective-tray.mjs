@@ -67,7 +67,7 @@ export class effectiveTray {
           </button>
         </li>
       `;
-      tray.querySelector('ul.effects.unlist.wrapper').insertAdjacentHTML("beforeend", contents);
+      tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
         if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
         const actors = new Set();
