@@ -1,10 +1,8 @@
 # Effective Tray (for D&D Fifth Edition)
 A module for dnd5e on foundryvtt that allows the effects and damage trays to be used more effectively.
 
-## For the Effect Tray: Configurable to allow users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own.
-## For the Damage Tray: Allows users to use the damage tray for targeted and selected tokens they own, or ones they don't own (with a setting.)
-Allows users to apply active effects to tokens from chat cards even if they do not own the actor that made the chat card.
-Allows users to apply damage to tokens using the damage tray.
+#### Allow users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own.
+#### Allows users to use the damage tray for targeted and selected tokens they own, or ones they don't own (with a setting.)
 - Adds a setting (on by default) that allows users to apply effects to targeted tokens by right clicking the apply button.
 - Adds a setting (on by default) that starts the effects and damage trays in their expanded position.
 - Adds a setting (on by default) that removes 'Apply Effect to Actor' from any effect with a duration when any item with an effect is created (dragged & droppped).
@@ -12,9 +10,9 @@ Allows users to apply damage to tokens using the damage tray.
 - Adds a setting (off by default) that deletes an effect rather than toggling it if a user attempts to transfer a duplicate effect.
 - Adds a setting (off by default) to disable the main function of the module, in order to just use the additional features.
 - Adds a setting (off by default) that allows users to damage tokens they do not own.
-- Adds a setting to use the default damage tray (off by default).
-- Adds a setting that keeps the trays open after applying an effect or damage (on by default).
-
+- Adds a setting (off by default) to use the default damage tray.
+- Adds a setting (on by default) that keeps the trays open after applying an effect or damage.
+- Adds an experimental setting (on by default) to scroll the chat to bottom when expanding a tray, if it is already at bottom at the time of expanding.
 ___
 ###### **Technical Details**
 
@@ -22,4 +20,4 @@ ___
 
 **License:** MIT License.
 
-**Additional Info:** Thanks to Zhell for help with adding actors to a set (and for the github action), and to Flix for much encouragement. Thanks also to ChaosOS for help with sockets, and DrentalBot for help with suppressing the system's context menu.
+**Additional Info:** Thanks to Zhell for help with adding actors to a set and lots of other stuff (and for the github action), and to Flix for much encouragement. Thanks also to ChaosOS for help with sockets, and DrentalBot for help with suppressing the system's context menu.

@@ -137,6 +137,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "scrollOnExpand", {
+      name: "EFFECTIVETRAY.ScrollOnExpandName",
+      hint: "EFFECTIVETRAY.ScrollOnExpandHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: false,
+      onChange: false
+    })
+
     game.settings.register(MODULE, "removeTransfer", {
       name: "EFFECTIVETRAY.RemoveTransferSettingName",
       hint: "EFFECTIVETRAY.RemoveTransferSettingHint",
