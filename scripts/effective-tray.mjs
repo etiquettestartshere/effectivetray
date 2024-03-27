@@ -24,7 +24,7 @@ export class effectiveTray {
     };
   };
 
-  // Make the tray effective...
+  // Make the tray effective
   static async _effectButton(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
@@ -147,7 +147,7 @@ export class effectiveDamage {
     };
   };
 
-  // Make the damage tray effective...
+  // Make the damage tray effective
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       if (!game.user.isGM) {
