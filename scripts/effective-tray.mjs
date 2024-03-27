@@ -3,6 +3,7 @@ import { MODULE, socketID } from "./const.mjs";
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
+    Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
@@ -23,7 +24,7 @@ export class effectiveTray {
     };
   };
 
-  // Make the tray effective
+  // Make the tray effective...
   static async _effectButton(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
@@ -123,18 +124,31 @@ export class effectiveTray {
       tray.classList.toggle("et-uncollapsed");
     });
   };
+
+  // Check and see if the effects tray needs to be scrolled
+  static _scrollEffectsTray(message, html) {
+    if (!game.settings.get(MODULE, "scrollOnExpand")) return;
+    const tray = html.querySelector('.effects-tray');
+    if (tray) {
+      tray.addEventListener('click', () => {
+        if (html.querySelector(".effects-tray.collapsed")) _scroll();
+        console.log("effectsTray");
+      });
+    };
+  };
 };
 
 export class effectiveDamage {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
+    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageCollapse);
+    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._scrollDamageTray);
     if (!game.settings.get(MODULE, "damageDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageTray);
     };
-    Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageCollapse);
   };
 
-  // Let users use the damage tray, either without or with the ability to target tokens other than their own
+  // Make the damage tray effective...
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       if (!game.user.isGM) {
@@ -160,6 +174,7 @@ export class effectiveDamage {
     if (!tray) return;
     tray.classList.remove("collapsed");
     tray.classList.add("et-uncollapsed");
+    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll();
     const upper = tray.querySelector(".roboto-upper");
     upper.addEventListener('click', event => {
       event.stopPropagation();
@@ -190,6 +205,18 @@ export class effectiveDamage {
         if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
       };
     });
+  };
+
+  // Check and see if the damage tray needs to be scrolled
+  static async _scrollDamageTray(message, html) {
+    if (!game.settings.get(MODULE, "scrollOnExpand")) return;
+    await new Promise(r => setTimeout(r, 112));
+    const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
+    if (upper) {
+      upper.addEventListener('click', () => {
+        if (html.querySelector(".damage-tray.collapsed")) _scroll();
+      });
+    };
   };
 };  
 
@@ -257,4 +284,16 @@ function _applyEffects(actor, effect) {
 async function _applyTargetDamage(id, options, dmg) {
   const actor = fromUuidSync(id);
   await actor.applyDamage(dmg, options);
+};
+
+// Scroll tray to bottom if at bottom
+async function _scroll() {
+  if (window.ui.chat.isAtBottom) {
+    await new Promise(r => setTimeout(r, 256));
+    await window.ui.chat.scrollBottom({ popout: false });
+  };  
+  if (window.ui.sidebar.popouts.chat && window.ui.sidebar.popouts.chat.isAtBottom) {
+    await new Promise(r => setTimeout(r, 256));
+    await window.ui.sidebar.popouts.chat.scrollBottom();
+  };  
 };

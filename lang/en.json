@@ -22,6 +22,8 @@
   "EFFECTIVETRAY.IgnoreNPCSettingHint": "Hide effects from users if they originate from NPCs they do not own.",
   "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor'",
   "EFFECTIVETRAY.RemoveTransferSettingHint": "On the time of creation (drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
+  "EFFECTIVETRAY.ScrollOnExpandName": "Scroll on Expand",
+  "EFFECTIVETRAY.ScrollOnExpandHint": "Scroll chat to bottom when expanding a tray that is at the bottom.",
   "EFFECTIVETRAY.SystemDefaultSettingName": "Use Default Effects Tray",
   "EFFECTIVETRAY.SystemDefaultSettingHint": "Retain default system behavior (if you only want the settings below this one)."
 }
