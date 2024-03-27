@@ -132,7 +132,6 @@ export class effectiveTray {
     if (tray) {
       tray.addEventListener('click', () => {
         if (html.querySelector(".effects-tray.collapsed")) _scroll();
-        console.log("effectsTray");
       });
     };
   };
