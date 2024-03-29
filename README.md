@@ -4,7 +4,7 @@ A module for dnd5e on foundryvtt that allows the effects and damage trays to be 
 ###### Effects Tray 
 Allow users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own.
 ###### Damage Tray
-Allows users to use the damage tray for targeted and selected tokens they own, or ones they don't own (with a setting.)
+Allows users to use the damage tray for targeted and selected tokens (either that they own, or ones they don't own with a setting).
 
 - Adds a setting (on by default) that allows users to apply effects to targeted tokens by right clicking the apply button.
 - Adds a setting (off by default) that allows users to damage tokens they do not own.
