@@ -40,6 +40,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "flagLevel", {
+      name: "EFFECTIVETRAY.FlagLevelSettingName",
+      hint: "EFFECTIVETRAY.FlagLevelSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: false,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "ignoreNPC", {
       name: "EFFECTIVETRAY.IgnoreNPCSettingName",
       hint: "EFFECTIVETRAY.IgnoreNPCSettingHint",

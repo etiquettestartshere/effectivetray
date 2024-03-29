@@ -54,6 +54,7 @@ export class effectiveTray {
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
     const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens";
+    const lvl = message.flags?.dnd5e?.use?.spellLevel;
     for (const effect of effects) {
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
@@ -74,7 +75,7 @@ export class effectiveTray {
         const actors = new Set();
         for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
         for (const actor of actors) {
-          _applyEffects(actor, effect);
+          _applyEffects(actor, effect, lvl);
         };
       });
       if (game.settings.get(MODULE, "dontCloseOnPress")) {
@@ -101,11 +102,11 @@ export class effectiveTray {
           const actors = new Set();
           for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
-            _applyEffects(actor, effect);
+            _applyEffects(actor, effect, lvl);
           }
         } else {
           const origin = effect.uuid;
-          game.socket.emit(socketID, {type: "firstCase", data: {origin, targets}});
+          game.socket.emit(socketID, {type: "firstCase", data: {origin, targets, lvl}});
         };
       });
     };
@@ -224,6 +225,7 @@ async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const targets = data.data.targets;
   const effect = await fromUuid(data.data.origin);
+  const lvl = data.data.lvl;
   const actors = new Set();
   for (const target of targets) {
     const token = await fromUuid(target);
@@ -231,7 +233,7 @@ async function _effectSocket(data) {
     if (target) actors.add(targetActor);
   };
   for (const actor of actors) {
-    _applyEffects(actor, effect);
+    _applyEffects(actor, effect, lvl);
   };
 };
 
@@ -259,21 +261,32 @@ export class effectiveSocket {
   };
 };
 
-// Apply effect, or toggle it if it exists
-function _applyEffects(actor, effect) {
+// Apply effect, or refresh its duration (and level) it if it exists
+function _applyEffects(actor, effect, lvl) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
+  let flags 
+  if (game.settings.get(MODULE, "flagLevel") && effect?.parent?.type === "spell") {
+    flags = foundry.utils.deepClone(effect.flags);
+    foundry.utils.mergeObject(flags, {
+      effectivetray: {
+        level: lvl
+      }
+    });
+  } else flags = effect.flags;
   if (existingEffect) {
     if (!game.settings.get(MODULE, "deleteInstead")) {
       return existingEffect.update({
         ...effect.constructor.getInitialDuration(),
-        disabled: false
+        disabled: false,
+        flags: flags
       });
     } else existingEffect.delete();
   } else {
     const effectData = foundry.utils.mergeObject(effect.toObject(), {
       disabled: false,
       transfer: false,
-      origin: effect.uuid
+      origin: effect.uuid,
+      flags: flags
     });
     ActiveEffect.implementation.create(effectData, {parent: actor});
   };
