@@ -269,7 +269,7 @@ function _applyEffects(actor, effect, lvl) {
     flags = foundry.utils.deepClone(effect.flags);
     foundry.utils.mergeObject(flags, {
       effectivetray: {
-        level: lvl
+        spellLevel: lvl
       }
     });
   } else flags = effect.flags;

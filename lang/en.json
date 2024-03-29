@@ -15,7 +15,7 @@
   "EFFECTIVETRAY.ExpandEffectSettingName": "Expand Effects Tray",
   "EFFECTIVETRAY.ExpandEffectSettingHint": "The effect tray on chat messages starts in its expanded position when the message is created.",
   "EFFECTIVETRAY.FlagLevelSettingName": "Flag Effects with Level",
-  "EFFECTIVETRAY.FlagLevelSettingHint": "Adds a flag to active effects applied via the tray of spells to indicate what level the spell was cast at.",
+  "EFFECTIVETRAY.FlagLevelSettingHint": "Adds a flag to active effects applied via the tray on spell messages indicating the level at which the spell was cast.",
   "EFFECTIVETRAY.FilterDispositionSettingName": "Filter by Disposition",
   "EFFECTIVETRAY.FilterDispositionSettingHint": "Hide effects from users if they originate from tokens with the selected (or worse) disposition.",
   "EFFECTIVETRAY.FilterPermissionSettingName": "Filter by Permission",
