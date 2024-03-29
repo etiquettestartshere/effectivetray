@@ -46,7 +46,7 @@ export class moduleSettings {
       scope: "world",
       config: true,
       type: Boolean,
-      default: true,
+      default: false,
       requiresReload: false,
       onChange: false
     });

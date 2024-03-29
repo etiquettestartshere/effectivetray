@@ -9,7 +9,7 @@ Allows users to use the damage tray for targeted and selected tokens (either tha
 - Adds a setting (on by default) that allows users to apply effects to targeted tokens by right clicking the apply button.
 - Adds a setting (off by default) that allows users to damage tokens they do not own.
 - Adds a setting (off by default) that deletes an effect rather than toggling it if a user attempts to transfer a duplicate effect.
-- Adds a setting to flag active effects generated from the chat messages of spells which contains the spell's level (for use with macros or other modules) with the scope `flags.effectivetray.spellLevel`.
+- Adds a setting (off by default) to flag active effects generated from the chat messages of spells which contains the spell's level (for use with macros or other modules) with the scope `flags.effectivetray.spellLevel`.
 - Allows filtering based on actor type, permissions, and token disposition. This prevents users from interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
 - Adds a setting (on by default) that keeps the trays open after applying an effect or damage.
 - Adds a setting (off by default) to use the default damage tray (in case only the settings below this one are desired).

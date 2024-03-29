@@ -1,5 +1,8 @@
 import { MODULE, socketID } from "./const.mjs";
 
+  /* -------------------------------------------- */
+  /*  Effects Handling                            */
+  /* -------------------------------------------- */
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
@@ -70,7 +73,9 @@ export class effectiveTray {
         </li>
       `;
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
-      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
+
+      // Handle click events
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect._id}"]`)?.querySelector("button").addEventListener('click', () => {
         if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
         const actors = new Set();
         for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
@@ -138,6 +143,9 @@ export class effectiveTray {
   };
 };
 
+  /* -------------------------------------------- */
+  /*  Damage Handling                             */
+  /* -------------------------------------------- */
 export class effectiveDamage {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
@@ -218,8 +226,11 @@ export class effectiveDamage {
       });
     };
   };
-};  
+};
 
+  /* -------------------------------------------- */
+  /*  Socket Handling                             */
+  /* -------------------------------------------- */
 // Make the GM client apply effects to the socket emitter's targets
 async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
@@ -256,15 +267,19 @@ export class effectiveSocket {
           break;
         case "secondCase":
           _damageSocket(data);  
-      }
+      };
     });
   };
 };
 
-// Apply effect, or refresh its duration (and level) it if it exists
-function _applyEffects(actor, effect, lvl) {
+  /* -------------------------------------------- */
+  /*  Functions                                   */
+  /* -------------------------------------------- */
+
+// Apply effect, or refresh its duration (and level) if it exists
+async function _applyEffects(actor, effect, lvl) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
-  let flags 
+  let flags;
   if (game.settings.get(MODULE, "flagLevel") && effect?.parent?.type === "spell") {
     flags = foundry.utils.deepClone(effect.flags);
     foundry.utils.mergeObject(flags, {
@@ -288,7 +303,8 @@ function _applyEffects(actor, effect, lvl) {
       origin: effect.uuid,
       flags: flags
     });
-    ActiveEffect.implementation.create(effectData, {parent: actor});
+    const applied = await ActiveEffect.implementation.create(effectData, {parent: actor});
+    return applied;
   };
 };
 
