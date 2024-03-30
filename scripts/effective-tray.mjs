@@ -217,7 +217,7 @@ export class effectiveDamage {
       } else {
         if (html.querySelector(".damage-tray.collapsed")) tray.classList.remove("collapsed");
         tray.classList.add("et-uncollapsed");
-        _scroll(mid);
+        if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
       };
     });
   };
