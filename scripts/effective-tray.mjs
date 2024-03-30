@@ -6,12 +6,14 @@ import { MODULE, socketID } from "./const.mjs";
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
-    Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
     };
+    if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
+      Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
+    };  
   };
 
   // Remove transfer from all effects with duration
@@ -118,22 +120,20 @@ export class effectiveTray {
     };
   };
 
-  // Handle effects tray collapse behavior
+  // Handle effects tray collapse behavior for default trays with don't close on submit
   static async _effectCollapse(message, html) {
-    if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
-      const tray = html.querySelector('.effects-tray');
-      if (!tray) return;
-      const buttons = tray.querySelectorAll("button");
-      tray.addEventListener('click', () => {
-        if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
-        else tray.classList.remove("et-uncollapsed");
+    const tray = html.querySelector('.effects-tray');
+    if (!tray) return;
+    const buttons = tray.querySelectorAll("button");
+    tray.addEventListener('click', () => {
+      if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
+      else tray.classList.remove("et-uncollapsed");
+    });
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        tray.classList.add("collapsed");
+        tray.classList.remove("et-uncollapsed");
       });
-      for (const button of buttons) {
-        button.addEventListener('click', () => {
-          tray.classList.add("collapsed");
-          tray.classList.remove("et-uncollapsed");
-        });
-      };
     };
   };
 
@@ -158,8 +158,9 @@ export class effectiveTray {
     if (!game.settings.get(MODULE, "scrollOnExpand")) return;
     const tray = html.querySelector('.effects-tray');
     if (tray) {
+      const mid = message.id;
       tray.addEventListener('click', () => {
-        if (html.querySelector(".effects-tray.collapsed")) _scroll();
+        if (html.querySelector(".effects-tray.collapsed")) _scroll(mid);
       });
     };
   };
@@ -204,7 +205,8 @@ export class effectiveDamage {
     if (!tray) return;
     tray.classList.remove("collapsed");
     tray.classList.add("et-uncollapsed");
-    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll();
+    const mid = message.id;
+    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
     const upper = tray.querySelector(".roboto-upper");
     upper.addEventListener('click', event => {
       event.stopPropagation();
@@ -215,6 +217,7 @@ export class effectiveDamage {
       } else {
         if (html.querySelector(".damage-tray.collapsed")) tray.classList.remove("collapsed");
         tray.classList.add("et-uncollapsed");
+        _scroll(mid);
       };
     });
   };
@@ -243,8 +246,9 @@ export class effectiveDamage {
     await new Promise(r => setTimeout(r, 112));
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     if (upper) {
+      const mid = message.id;
       upper.addEventListener('click', () => {
-        if (html.querySelector(".damage-tray.collapsed")) _scroll();
+        if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
       });
     };
   };
@@ -337,7 +341,8 @@ async function _applyTargetDamage(id, options, dmg) {
 };
 
 // Scroll tray to bottom if at bottom
-async function _scroll() {
+async function _scroll(mid) {
+  if (mid !== (Array.from(game.messages).at(-1).id)) return;
   if (window.ui.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
     await window.ui.chat.scrollBottom({ popout: false });
