@@ -343,7 +343,7 @@ async function _applyTargetDamage(id, options, dmg) {
 
 // Scroll tray to bottom if at bottom
 async function _scroll(mid) {
-  if (mid !== (Array.from(game.messages).at(-1).id)) return;
+  if (mid !== game.messages.contents[game.messages.size - 1].id) return;
   if (window.ui.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
     await window.ui.chat.scrollBottom({ popout: false });
