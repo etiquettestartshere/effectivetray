@@ -6,6 +6,7 @@ import { MODULE, socketID } from "./const.mjs";
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
+    Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) {
@@ -117,12 +118,33 @@ export class effectiveTray {
     };
   };
 
+  // Handle effects tray collapse behavior
+  static async _effectCollapse(message, html) {
+    if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
+      const tray = html.querySelector('.effects-tray');
+      if (!tray) return;
+      const buttons = tray.querySelectorAll("button");
+      tray.addEventListener('click', () => {
+        if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
+        else tray.classList.remove("et-uncollapsed");
+      });
+      for (const button of buttons) {
+        button.addEventListener('click', () => {
+          tray.classList.add("collapsed");
+          tray.classList.remove("et-uncollapsed");
+        });
+      };
+    };
+  };
+
   // Expand effects tray on chat messages
-  static _expandEffect(message, html) {
+  static async _expandEffect(message, html) {
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
+    if (game.settings.get(MODULE, "systemDefault")) await new Promise(r => setTimeout(r, 100));
     tray.classList.remove("collapsed");
+    if (game.settings.get(MODULE, "systemDefault")) return;
     tray.classList.add("et-uncollapsed");
     tray.addEventListener('click', event => {
       event.stopPropagation();
