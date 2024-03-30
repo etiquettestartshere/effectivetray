@@ -121,7 +121,7 @@ export class effectiveTray {
   };
 
   // Handle effects tray collapse behavior for default trays with don't close on submit
-  static async _effectCollapse(message, html) {
+  static _effectCollapse(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
@@ -351,5 +351,5 @@ async function _scroll(mid) {
   if (window.ui.sidebar.popouts.chat && window.ui.sidebar.popouts.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
     await window.ui.sidebar.popouts.chat.scrollBottom();
-  };  
+  };
 };
