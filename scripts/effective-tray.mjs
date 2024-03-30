@@ -257,6 +257,7 @@ export class effectiveDamage {
   /* -------------------------------------------- */
   /*  Socket Handling                             */
   /* -------------------------------------------- */
+
 // Make the GM client apply effects to the socket emitter's targets
 async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
