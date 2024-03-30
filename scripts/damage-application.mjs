@@ -1,5 +1,9 @@
 import { socketID } from "./const.mjs";
 
+  /* -------------------------------------------- */
+  /*  Damage Application Extension (from dnd5e)   */
+  /* -------------------------------------------- */
+
 const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2, "2"]];
 
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
@@ -7,7 +11,6 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
 
-    // Calculate damage to apply
     const targetOptions = this.getTargetOptions(uuid);
     const { total, active } = this.calculateDamage(token, targetOptions);
 

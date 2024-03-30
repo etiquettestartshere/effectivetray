@@ -1,5 +1,8 @@
 import { MODULE, socketID } from "./const.mjs";
 
+  /* -------------------------------------------- */
+  /*  Effects Handling                            */
+  /* -------------------------------------------- */
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
@@ -8,6 +11,9 @@ export class effectiveTray {
     if (!game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
     };
+    if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
+      Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
+    };  
   };
 
   // Remove transfer from all effects with duration
@@ -54,6 +60,7 @@ export class effectiveTray {
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
     const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens";
+    const lvl = message.flags?.dnd5e?.use?.spellLevel;
     for (const effect of effects) {
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
@@ -69,12 +76,14 @@ export class effectiveTray {
         </li>
       `;
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
-      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('click', () => {
+
+      // Handle click events
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect._id}"]`)?.querySelector("button").addEventListener('click', () => {
         if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
         const actors = new Set();
         for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
         for (const actor of actors) {
-          _applyEffects(actor, effect);
+          _applyEffects(actor, effect, lvl);
         };
       });
       if (game.settings.get(MODULE, "dontCloseOnPress")) {
@@ -101,22 +110,41 @@ export class effectiveTray {
           const actors = new Set();
           for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
-            _applyEffects(actor, effect);
+            _applyEffects(actor, effect, lvl);
           }
         } else {
           const origin = effect.uuid;
-          game.socket.emit(socketID, {type: "firstCase", data: {origin, targets}});
+          game.socket.emit(socketID, {type: "firstCase", data: {origin, targets, lvl}});
         };
       });
     };
   };
 
+  // Handle effects tray collapse behavior for default trays with don't close on submit
+  static async _effectCollapse(message, html) {
+    const tray = html.querySelector('.effects-tray');
+    if (!tray) return;
+    const buttons = tray.querySelectorAll("button");
+    tray.addEventListener('click', () => {
+      if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
+      else tray.classList.remove("et-uncollapsed");
+    });
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        tray.classList.add("collapsed");
+        tray.classList.remove("et-uncollapsed");
+      });
+    };
+  };
+
   // Expand effects tray on chat messages
-  static _expandEffect(message, html) {
+  static async _expandEffect(message, html) {
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
+    if (game.settings.get(MODULE, "systemDefault")) await new Promise(r => setTimeout(r, 100));
     tray.classList.remove("collapsed");
+    if (game.settings.get(MODULE, "systemDefault")) return;
     tray.classList.add("et-uncollapsed");
     tray.addEventListener('click', event => {
       event.stopPropagation();
@@ -130,13 +158,17 @@ export class effectiveTray {
     if (!game.settings.get(MODULE, "scrollOnExpand")) return;
     const tray = html.querySelector('.effects-tray');
     if (tray) {
+      const mid = message.id;
       tray.addEventListener('click', () => {
-        if (html.querySelector(".effects-tray.collapsed")) _scroll();
+        if (html.querySelector(".effects-tray.collapsed")) _scroll(mid);
       });
     };
   };
 };
 
+  /* -------------------------------------------- */
+  /*  Damage Handling                             */
+  /* -------------------------------------------- */
 export class effectiveDamage {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
@@ -173,7 +205,8 @@ export class effectiveDamage {
     if (!tray) return;
     tray.classList.remove("collapsed");
     tray.classList.add("et-uncollapsed");
-    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll();
+    const mid = message.id;
+    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
     const upper = tray.querySelector(".roboto-upper");
     upper.addEventListener('click', event => {
       event.stopPropagation();
@@ -184,6 +217,7 @@ export class effectiveDamage {
       } else {
         if (html.querySelector(".damage-tray.collapsed")) tray.classList.remove("collapsed");
         tray.classList.add("et-uncollapsed");
+        if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
       };
     });
   };
@@ -212,18 +246,24 @@ export class effectiveDamage {
     await new Promise(r => setTimeout(r, 112));
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     if (upper) {
+      const mid = message.id;
       upper.addEventListener('click', () => {
-        if (html.querySelector(".damage-tray.collapsed")) _scroll();
+        if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
       });
     };
   };
-};  
+};
+
+  /* -------------------------------------------- */
+  /*  Socket Handling                             */
+  /* -------------------------------------------- */
 
 // Make the GM client apply effects to the socket emitter's targets
 async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const targets = data.data.targets;
   const effect = await fromUuid(data.data.origin);
+  const lvl = data.data.lvl;
   const actors = new Set();
   for (const target of targets) {
     const token = await fromUuid(target);
@@ -231,7 +271,7 @@ async function _effectSocket(data) {
     if (target) actors.add(targetActor);
   };
   for (const actor of actors) {
-    _applyEffects(actor, effect);
+    _applyEffects(actor, effect, lvl);
   };
 };
 
@@ -254,28 +294,44 @@ export class effectiveSocket {
           break;
         case "secondCase":
           _damageSocket(data);  
-      }
+      };
     });
   };
 };
 
-// Apply effect, or toggle it if it exists
-function _applyEffects(actor, effect) {
+  /* -------------------------------------------- */
+  /*  Functions                                   */
+  /* -------------------------------------------- */
+
+// Apply effect, or refresh its duration (and level) if it exists
+async function _applyEffects(actor, effect, lvl) {
   const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
+  let flags;
+  if (game.settings.get(MODULE, "flagLevel") && effect?.parent?.type === "spell") {
+    flags = foundry.utils.deepClone(effect.flags);
+    foundry.utils.mergeObject(flags, {
+      effectivetray: {
+        spellLevel: lvl
+      }
+    });
+  } else flags = effect.flags;
   if (existingEffect) {
     if (!game.settings.get(MODULE, "deleteInstead")) {
       return existingEffect.update({
         ...effect.constructor.getInitialDuration(),
-        disabled: false
+        disabled: false,
+        flags: flags
       });
     } else existingEffect.delete();
   } else {
     const effectData = foundry.utils.mergeObject(effect.toObject(), {
       disabled: false,
       transfer: false,
-      origin: effect.uuid
+      origin: effect.uuid,
+      flags: flags
     });
-    ActiveEffect.implementation.create(effectData, {parent: actor});
+    const applied = await ActiveEffect.implementation.create(effectData, {parent: actor});
+    return applied;
   };
 };
 
@@ -286,7 +342,8 @@ async function _applyTargetDamage(id, options, dmg) {
 };
 
 // Scroll tray to bottom if at bottom
-async function _scroll() {
+async function _scroll(mid) {
+  if (mid !== (Array.from(game.messages).at(-1).id)) return;
   if (window.ui.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
     await window.ui.chat.scrollBottom({ popout: false });

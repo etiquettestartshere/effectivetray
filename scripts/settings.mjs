@@ -40,6 +40,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "flagLevel", {
+      name: "EFFECTIVETRAY.FlagLevelSettingName",
+      hint: "EFFECTIVETRAY.FlagLevelSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: false,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "ignoreNPC", {
       name: "EFFECTIVETRAY.IgnoreNPCSettingName",
       hint: "EFFECTIVETRAY.IgnoreNPCSettingHint",
@@ -82,17 +93,6 @@ export class moduleSettings {
       }
     });
 
-    game.settings.register(MODULE, "dontCloseOnPress", {
-      name: "EFFECTIVETRAY.DontCloseOnPressSettingName",
-      hint: "EFFECTIVETRAY.DontCloseOnPressSettingHint",
-      scope: "client",
-      config: true,
-      type: Boolean,
-      default: true,
-      requiresReload: true,
-      onChange: false
-    });
-
     game.settings.register(MODULE, "systemDefault", {
       name: "EFFECTIVETRAY.SystemDefaultSettingName",
       hint: "EFFECTIVETRAY.SystemDefaultSettingHint",
@@ -129,6 +129,17 @@ export class moduleSettings {
     game.settings.register(MODULE, "expandDamage", {
       name: "EFFECTIVETRAY.ExpandDamageSettingName",
       hint: "EFFECTIVETRAY.ExpandDamageSettingHint",
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: true,
+      onChange: false
+    });
+
+    game.settings.register(MODULE, "dontCloseOnPress", {
+      name: "EFFECTIVETRAY.DontCloseOnPressSettingName",
+      hint: "EFFECTIVETRAY.DontCloseOnPressSettingHint",
       scope: "client",
       config: true,
       type: Boolean,
