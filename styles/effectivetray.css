@@ -1,16 +1,7 @@
-.dnd5e2 :is(.card-tray, .effects-tray).et-uncollapsed label .fa-caret-down {
+.dnd5e2 :is(.card-tray, .effects-tray, .damage-tray).et-uncollapsed label .fa-caret-down {
   transform: rotate(0deg);
 }
-.dnd5e2 :is(.card-tray, .effects-tray).et-uncollapsed .collapsible-content {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 250ms ease;
-}
-
-.dnd5e2 :is(.damage-tray).et-uncollapsed label .fa-caret-down {
-  transform: rotate(0deg);
-}
-.dnd5e2 :is(.damage-tray).et-uncollapsed .collapsible-content {
+.dnd5e2 :is(.card-tray, .effects-tray, .damage-tray).et-uncollapsed .collapsible-content {
   display: grid;
   grid-template-rows: 1fr;
   transition: grid-template-rows 250ms ease;
