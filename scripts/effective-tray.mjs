@@ -276,7 +276,7 @@ async function _effectSocket(data) {
 };
 
 // Make the GM client apply damage to the socket emitter's targets
-async function _damageSocket(data) {
+function _damageSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const id = data.data.id;
   const options = data.data.options;
@@ -346,10 +346,10 @@ async function _scroll(mid) {
   if (mid !== game.messages.contents.at(-1).id) return;
   if (window.ui.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
-    await window.ui.chat.scrollBottom({ popout: false });
+    window.ui.chat.scrollBottom({ popout: false });
   };  
   if (window.ui.sidebar.popouts.chat && window.ui.sidebar.popouts.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
-    await window.ui.sidebar.popouts.chat.scrollBottom();
+    window.ui.sidebar.popouts.chat.scrollBottom();
   };
 };
