@@ -1,26 +1,28 @@
 # Effective Tray (for D&D Fifth Edition)
 A module for dnd5e on foundryvtt that allows the effects and damage trays to be used more effectively.
 
-###### Effects Tray 
-Allow users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own.
-###### Damage Tray
-Allows users to use the damage tray for targeted and selected tokens (either that they own, or ones they don't own with a setting).
+## Effects Tray 
+Allows users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own. If using this feature (which is on by default), left click to apply effects to selected tokens that the user owns (as the system's default behavior), or right click to apply effects to tokens that the user does not own.
+## Damage Tray
+Allows users to use the damage tray for selected tokens that they own, and for targeted tokens (either that they own, or ones they don't own with a setting) User ability to use the damage tray is on by default, but unless the relevant setting is selected, they cannot damage targets.
 
-- Adds a setting (on by default) that allows users to apply effects to targeted tokens by right clicking the apply button.
-- Adds a setting (off by default) that allows users to damage tokens they do not own.
-- Adds a setting (off by default) that deletes an effect rather than toggling it if a user attempts to transfer a duplicate effect.
-- Adds a setting (off by default) to flag active effects generated from the chat messages of spells which contains the spell's level (for use with macros or other modules) with the scope `flags.effectivetray.spellLevel`.
-- Allows filtering based on actor type, permissions, and token disposition. This prevents users from interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
-- Adds a setting (off by default) to use the default damage tray (in case only the settings below this one are desired).
-- Adds a setting (off by default) to use the default damage tray.
-- Adds settings (on by default) that starts the effects and damage trays in their expanded position.
-- Adds a setting (on by default) that keeps the trays open after applying an effect or damage.
-- Adds an experimental setting (on by default) to scroll the chat to bottom when expanding a tray, if it is already at bottom at the time of expanding.
-- Adds a setting (on by default) that removes 'Apply Effect to Actor' from any effect with a duration when any item with an effect is created (dragged & droppped).
+## Settings
+- **Transfer to Target**: Allow users to transfer effects to targets with right click (on by default).
+- **Legacy Targeting for Effects**: Apply effects to target with right click, rather than the target source control (off by default).
+- **Damage Target**: Allow users to damage targets (that they don't own) with the damage tray (off by default).
+- **Delete Instead of Refresh**: Attempting to transfer an effect to an actor that has it already will delete it rather than refreshing its duration (off by default).
+- **Flag Effects with Level**: Adds a flag to active effects applied via the tray on spell messages indicating the level at which the spell was cast, with the scope `ActiveEffect#flags.effectivetray.spellLevel` (for use with macros or other modules, off by default).
+- **Filtering** based on actor type, permissions, and token disposition. This prevents users from seeing and interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
+- **Use Default Trays**: Adds settings (off by default) to use the default effects and damage trays. Only the features *below* this setting will function if a given tray is in its default mode.
+- **Expand Effects Tray**: The effect tray on chat messages starts in its expanded position when the message is created (on by default).
+- **Expand Damage Tray**: The damage tray on chat messages starts in its expanded position when the message is created (on by default).
+- **Don't Close Trays on Apply**: Don't automatically close trays when hitting submit. Won't work with default effects tray (on by default).
+- **Scroll on Expand**: Scroll chat to bottom when expanding a tray that is at the bottom (experimental, on by default).
+- **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
 ___
 ###### **Technical Details**
 
-**Scope:** Replaces the effects tray in chat messages with a similar one that allows all users, not just GMs or the chat message's creator, to apply active effects to tokens they control (and have selected) by looping over all messages in the "dnd5e.renderChatMessage" hook. Additionally, transmits effect and target data via sockets to allow an active GM client to apply effects to a non GM user's targets.
+**Scope:** Replaces the effects tray in chat messages with a similar one that allows all users, not just GMs or the chat message's creator, to apply active effects to tokens they control (and have selected) by looping over all messages in the "dnd5e.renderChatMessage" hook. Extends the system's damage application element class to allow users who are not GMs to use the damage tray. Additionally, transmits target target and change data via sockets to allow an active GM client to apply effects (or damage) to a non GM user's targets.
 
 **License:** MIT License.
 

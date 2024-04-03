@@ -8,4 +8,7 @@
 - For small fixes, target the branch with the version the smallest increment up from the current release (generally **N.N.X**).
 - For fixes in line with a major system release, target the next major release (generally **N.X.N**).
 - Generally speaking, make your PR targets branches with current milestones.
-※ *If the above information becomes inapplicable, perhaps because I forgot to update it, just target the main branch.*
+※ *If the above information becomes inapplicable, perhaps because I forgot to update it or development of a new branch has not yet started, just target the main branch.*
+
+## Translation
+- As of 1.1.4, the module should be fully localized. If you would like to make a translation, please make a PR with `effectivetray/lang/<lang>.json` that has localized keys, referring to `en.json` as your template. I believe partial translations should be fine, as it will default to `en` in cases where a translation key is lacking. If you are uncomfortable making a PR but want to contribute a translation anyway, contact me on discord or make an issue.

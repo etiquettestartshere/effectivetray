@@ -18,6 +18,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "contextTarget", {
+      name: "EFFECTIVETRAY.ContextTargetSettingName",
+      hint: "EFFECTIVETRAY.ContextTargetSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "damageTarget", {
       name: "EFFECTIVETRAY.DamageTargetSettingName",
       hint: "EFFECTIVETRAY.DamageTargetSettingHint",
@@ -71,9 +82,9 @@ export class moduleSettings {
       default: 0,
       requiresReload: true,
       choices: {
-        0: "None",
-        1: "Limited",
-        2: "Observer"
+        0: "EFFECTIVETRAY.SettingsNoFilter",
+        1: "OWNERSHIP.LIMITED",
+        2: "OWNERSHIP.OBSERVER"
       }
     });
 
@@ -86,10 +97,10 @@ export class moduleSettings {
       default: 0,
       requiresReload: true,
       choices: {
-        0: "None",
-        1: "Secret",
-        2: "Hostile",
-        3: "Neutral"
+        0: "EFFECTIVETRAY.SettingsNoFilter",
+        1: "TOKEN.DISPOSITION.SECRET",
+        2: "TOKEN.DISPOSITION.HOSTILE",
+        3: "TOKEN.DISPOSITION.NEUTRAL"
       }
     });
 

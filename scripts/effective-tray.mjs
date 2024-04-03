@@ -13,7 +13,16 @@ export class effectiveTray {
     };
     if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
+    };
+    if (game.settings.get(MODULE, "expandEffect") || game.settings.get(MODULE, "expandDamage")) {
+      Hooks.on("ready", effectiveTray._readyScroll);
     };  
+  };
+
+  // Scroll chat to bottom on ready if any trays have been expanded
+  static async _readyScroll() {
+    await new Promise(r => setTimeout(r, 108));
+    window.ui.chat.scrollBottom({ popout: true });
   };
 
   // Remove transfer from all effects with duration
@@ -59,7 +68,11 @@ export class effectiveTray {
     // Replace the effects in the tray
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
     if (old) for (const oldEffect of old) oldEffect.remove();
-    const tooltip = (game.settings.get(MODULE, "allowTarget")) ? "EFFECTIVETRAY.EffectsApplyTokens" : "DND5E.EffectsApplyTokens";
+    const tooltip = (game.settings.get(MODULE, "allowTarget")) ? (
+      game.settings.get(MODULE, "contextTarget") ?
+        "EFFECTIVETRAY.EffectsApplyTokensLegacy" :
+        "EFFECTIVETRAY.EffectsApplyTokens"
+    ) : "DND5E.EffectsApplyTokens";
     const lvl = message.flags?.dnd5e?.use?.spellLevel;
     for (const effect of effects) {
       const label = effect.duration.duration ? effect.duration.label : "";
@@ -77,13 +90,55 @@ export class effectiveTray {
       `;
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
+      // Handle the target source control
+      if (!game.settings.get(MODULE, "contextTarget")) {
+        const tsc = `
+        <div class="target-source-control">
+          <button type="button" class="unbutton" data-mode="targeted" aria-pressed="false">
+            <i class="fa-solid fa-bullseye" inert=""></i> Targeted
+          </button>
+          <button type="button" class="unbutton" data-mode="selected" aria-pressed="false">
+            <i class="fa-solid fa-expand" inert=""></i> Selected
+          </button>        
+        </div>
+        `
+        tray.querySelector('ul.effects.unlist').insertAdjacentHTML("afterbegin", tsc);
+        const source = tray.querySelector('.target-source-control');
+        if (!game.settings.get(MODULE, "allowTarget")) source.remove();
+        const toPress = source.querySelector(`[data-mode="selected"]`);
+        toPress.ariaPressed = true;
+        for (const mode of source.querySelectorAll(`[data-mode]`)) {
+          mode.addEventListener('click', () => {
+            source.querySelector(`[aria-pressed="true"]`).ariaPressed = false;
+            source.querySelector(`[data-mode="${mode.dataset.mode}"]`).ariaPressed = true;
+          });
+        };
+      };
+
       // Handle click events
       tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect._id}"]`)?.querySelector("button").addEventListener('click', () => {
-        if (game.settings.get(MODULE, "allowTarget") && !canvas.tokens.controlled.length) return ui.notifications.info("Select a token, or right click to apply effect to targets.")
-        const actors = new Set();
-        for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
-        for (const actor of actors) {
-          _applyEffects(actor, effect, lvl);
+        const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
+        if (!mode || mode === "selected") {
+          const actors = new Set();
+          for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
+          for (const actor of actors) {
+            _applyEffects(actor, effect, lvl);
+          };
+        } else {
+
+          // Handle applying effects to targets: handle it if you can handle it, else emit a socket
+          if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
+          const targets = Array.from(game.user.targets).map(i=>i.document.uuid)
+          if (game.user.isGM) {
+            const actors = new Set();
+            for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
+            for (const actor of actors) {
+              _applyEffects(actor, effect, lvl);
+            }
+          } else {
+            const origin = effect.uuid;
+            game.socket.emit(socketID, {type: "firstCase", data: {origin, targets, lvl}});
+          };
         };
       });
       if (game.settings.get(MODULE, "dontCloseOnPress")) {
@@ -96,15 +151,15 @@ export class effectiveTray {
           });
         };
       };
-      if (!game.settings.get(MODULE, "allowTarget")) return;
+      if (!game.settings.get(MODULE, "allowTarget") || !game.settings.get(MODULE, "contextTarget")) return;
 
-      // Handle applying effects to targets: handle it if you can handle it, else emit a socket
+      // Handle legacy targeting mode
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
         event.stopPropagation();
         event.preventDefault();
       });
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', () => {
-        if (!game.user.targets.size) return ui.notifications.info("You don't have a target.");
+        if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
         const targets = Array.from(game.user.targets).map(i=>i.document.uuid)
         if (game.user.isGM) {
           const actors = new Set();
@@ -121,7 +176,7 @@ export class effectiveTray {
   };
 
   // Handle effects tray collapse behavior for default trays with don't close on submit
-  static async _effectCollapse(message, html) {
+  static _effectCollapse(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
@@ -276,7 +331,7 @@ async function _effectSocket(data) {
 };
 
 // Make the GM client apply damage to the socket emitter's targets
-async function _damageSocket(data) {
+function _damageSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const id = data.data.id;
   const options = data.data.options;
@@ -343,13 +398,13 @@ async function _applyTargetDamage(id, options, dmg) {
 
 // Scroll tray to bottom if at bottom
 async function _scroll(mid) {
-  if (mid !== game.messages.contents[game.messages.size - 1].id) return;
+  if (mid !== game.messages.contents.at(-1).id) return;
   if (window.ui.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
-    await window.ui.chat.scrollBottom({ popout: false });
+    window.ui.chat.scrollBottom({ popout: false });
   };  
   if (window.ui.sidebar.popouts.chat && window.ui.sidebar.popouts.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
-    await window.ui.sidebar.popouts.chat.scrollBottom();
-  };  
+    window.ui.sidebar.popouts.chat.scrollBottom();
+  };
 };
