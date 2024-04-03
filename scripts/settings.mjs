@@ -18,6 +18,17 @@ export class moduleSettings {
       onChange: false
     });
 
+    game.settings.register(MODULE, "contextTarget", {
+      name: "EFFECTIVETRAY.ContextTargetSettingName",
+      hint: "EFFECTIVETRAY.ContextTargetSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: true,
+      onChange: false
+    });
+
     game.settings.register(MODULE, "damageTarget", {
       name: "EFFECTIVETRAY.DamageTargetSettingName",
       hint: "EFFECTIVETRAY.DamageTargetSettingHint",
