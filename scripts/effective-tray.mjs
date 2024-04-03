@@ -17,8 +17,7 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "expandEffect") || game.settings.get(MODULE, "expandDamage")) Hooks.on("ready", effectiveTray._readyScroll);
   };
 
-  static async _readyScroll() {
-    await new Promise(r => setTimeout(r, 108));
+  static _readyScroll() {
     window.ui.chat.scrollBottom({ popout: true });
   };
 
