@@ -17,6 +17,7 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "expandEffect") || game.settings.get(MODULE, "expandDamage")) Hooks.on("ready", effectiveTray._readyScroll);
   };
 
+  // Scroll chat to bottom on ready if any trays have been expanded
   static _readyScroll() {
     window.ui.chat.scrollBottom({ popout: true });
   };
