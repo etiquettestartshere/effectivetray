@@ -154,7 +154,7 @@ export class moduleSettings {
       scope: "client",
       config: true,
       type: Boolean,
-      default: true,
+      default: false,
       requiresReload: true,
       onChange: false
     });

@@ -90,6 +90,24 @@ export class effectiveTray {
       `;
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
+      // Handle expanding and collapsing the tray
+      // No longer adhering to the system's deranged behavior of closing it if you click anywhere that isn't a button
+      tray.addEventListener('click', event => {
+        event.stopPropagation();
+        event.preventDefault();
+      });
+      const mid = message.id;
+      const upper = tray.querySelector(".roboto-upper");
+      upper.addEventListener('click', event => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (html.querySelector(".et-uncollapsed")) tray.classList.remove("et-uncollapsed");
+        if (!html.querySelector(".effects-tray.collapsed")) {
+          tray.classList.add("collapsed");
+        } else if (html.querySelector(".effects-tray.collapsed")) tray.classList.remove("collapsed");
+        if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
+      });
+
       // Handle the target source control
       if (!game.settings.get(MODULE, "contextTarget")) {
         const tsc = `
@@ -123,6 +141,7 @@ export class effectiveTray {
           for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
             _applyEffects(actor, effect, lvl);
+            tray.classList.add("collapsed");
           };
         } else {
 
@@ -134,10 +153,12 @@ export class effectiveTray {
             for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
             for (const actor of actors) {
               _applyEffects(actor, effect, lvl);
+              tray.classList.add("collapsed");
             }
           } else {
             const origin = effect.uuid;
             game.socket.emit(socketID, {type: "firstCase", data: {origin, targets, lvl}});
+            tray.classList.add("collapsed");
           };
         };
       });
@@ -145,9 +166,10 @@ export class effectiveTray {
         const buttons = tray.querySelectorAll("button");
         for (const button of buttons) {
           button.addEventListener('click', event => {
-            event.stopPropagation();
-            event.preventDefault();
-            tray.classList.add("et-uncollapsed");
+            if (!tray.querySelector(".et-uncollapsed")) {
+              tray.classList.add("et-uncollapsed");
+              tray.classList.remove("collapsed");
+            }  
           });
         };
       };
@@ -157,8 +179,6 @@ export class effectiveTray {
       tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
         event.stopPropagation();
         event.preventDefault();
-      });
-      tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', () => {
         if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
         const targets = Array.from(game.user.targets).map(i=>i.document.uuid)
         if (game.user.isGM) {
@@ -166,10 +186,12 @@ export class effectiveTray {
           for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
             _applyEffects(actor, effect, lvl);
+            tray.classList.add("collapsed");
           }
         } else {
           const origin = effect.uuid;
           game.socket.emit(socketID, {type: "firstCase", data: {origin, targets, lvl}});
+          tray.classList.add("collapsed");
         };
       });
     };
@@ -197,15 +219,10 @@ export class effectiveTray {
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
-    if (game.settings.get(MODULE, "systemDefault")) await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 100));
     tray.classList.remove("collapsed");
     if (game.settings.get(MODULE, "systemDefault")) return;
-    tray.classList.add("et-uncollapsed");
-    tray.addEventListener('click', event => {
-      event.stopPropagation();
-      event.preventDefault();
-      tray.classList.toggle("et-uncollapsed");
-    });
+    tray.classList.remove("collapsed");
   };
 
   // Check and see if the effects tray needs to be scrolled
@@ -256,9 +273,9 @@ export class effectiveDamage {
   // Expand the damage tray
   static async _expandDamage(message, html) {
     if (!game.settings.get(MODULE, "expandDamage")) return;
-    await new Promise(r => setTimeout(r, 100));
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
+    await new Promise(r => setTimeout(r, 100));
     tray.classList.remove("collapsed");
     tray.classList.add("et-uncollapsed");
     const mid = message.id;
