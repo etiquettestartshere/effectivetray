@@ -238,6 +238,7 @@ export class effectiveDamage {
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       if (!game.user.isGM) {
+        if (message.whisper.length && !message.whisper.includes(game.user.id)) return;
         const damageApplication = game.settings.get(MODULE, "damageTarget") ?
           document.createElement("effective-damage-application") :
           document.createElement("damage-application");
