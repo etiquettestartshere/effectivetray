@@ -311,6 +311,13 @@ export class effectiveDamage {
         if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
       };
     });
+    const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
+    upper.addEventListener('click', event => {
+      if (html.querySelector(".damage-tray.et-uncollapsed")) {
+        tray.classList.toggle("et-uncollapsed");
+        tray.classList.remove("collapsed");
+      };
+    });
   };
 
   // Check and see if the damage tray needs to be scrolled
