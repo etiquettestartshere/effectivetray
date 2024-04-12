@@ -413,6 +413,9 @@ async function _applyEffects(actor, effect, lvl, concentration) {
         flags: flags
       });
     } else existingEffect.delete();
+    if ( !game.user.isGM && concentration && !concentration.actor?.isOwner ) {
+      throw new Error(game.i18n.localize("DND5E.EffectApplyWarningConcentration"));
+    }
   } else {
     const effectData = foundry.utils.mergeObject(effect.toObject(), {
       disabled: false,
