@@ -21,7 +21,7 @@ export class moduleSettings {
     game.settings.register(MODULE, "contextTarget", {
       name: "EFFECTIVETRAY.ContextTargetSettingName",
       hint: "EFFECTIVETRAY.ContextTargetSettingHint",
-      scope: "world",
+      scope: "client",
       config: true,
       type: Boolean,
       default: false,
