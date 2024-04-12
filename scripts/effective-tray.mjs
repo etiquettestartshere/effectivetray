@@ -9,7 +9,7 @@ export class effectiveTray {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) {
-      Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectButton);
+      Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectTray);
     };
     if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
@@ -40,7 +40,7 @@ export class effectiveTray {
   };
 
   // Make the tray effective
-  static async _effectButton(message, html) {
+  static async _effectTray(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const uuid = message.flags?.dnd5e?.use?.itemUuid;
@@ -101,7 +101,10 @@ export class effectiveTray {
           for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
             await _applyEffects(actor, effect, lvl, concentration);
-            tray.classList.add("collapsed");
+            if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+              tray.classList.add("collapsed");
+              tray.classList.remove("et-uncollapsed");
+            };  
           };
         } else {
 
@@ -112,13 +115,19 @@ export class effectiveTray {
             const actors = new Set();
             for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
             for (const actor of actors) {
-               await _applyEffects(actor, effect, lvl, concentration);
-              tray.classList.add("collapsed");
+              await _applyEffects(actor, effect, lvl, concentration);
+              if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+                tray.classList.add("collapsed");
+                tray.classList.remove("et-uncollapsed");
+              };
             }
           } else {
             const origin = effect.uuid;
             await game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
-            tray.classList.add("collapsed");
+            if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+              tray.classList.add("collapsed");
+              tray.classList.remove("et-uncollapsed");
+            };
           };
         };
       });
@@ -135,12 +144,18 @@ export class effectiveTray {
             for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
             for (const actor of actors) {
               await _applyEffects(actor, effect, lvl, concentration);
-              tray.classList.add("collapsed");
+              if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+                tray.classList.add("collapsed");
+                tray.classList.remove("et-uncollapsed");
+              };  
             }
           } else {
             const origin = effect.uuid;
             await game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
-            tray.classList.add("collapsed");
+            if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+              tray.classList.add("collapsed");
+              tray.classList.remove("et-uncollapsed");
+            };  
           };
         });
       };
@@ -157,7 +172,9 @@ export class effectiveTray {
     upper.addEventListener('click', function (event) {
       event.stopPropagation();
       event.preventDefault();
-      if (html.querySelector(".et-uncollapsed")) tray.classList.remove("et-uncollapsed");
+      if (html.querySelector(".et-uncollapsed")) {
+        tray.classList.remove("et-uncollapsed");
+      };  
       if (!html.querySelector(".effects-tray.collapsed")) {
         tray.classList.add("collapsed");
       } else if (html.querySelector(".effects-tray.collapsed")) tray.classList.remove("collapsed");
@@ -193,10 +210,11 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', async function () {
           if (!tray.querySelector(".et-uncollapsed")) {
-            tray.classList.add("et-uncollapsed");
-            tray.classList.remove("collapsed");
+            await tray.classList.add("et-uncollapsed");
+            await new Promise(r => setTimeout(r, 108));
+            await tray.classList.remove("collapsed");
           }
         });
       };
@@ -226,8 +244,9 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const mid = message.id;
-    await new Promise(r => setTimeout(r, 100));
-    tray.classList.remove("collapsed");
+    await tray.classList.add("et-uncollapsed");
+    await new Promise(r => setTimeout(r, 108));
+    await tray.classList.remove("collapsed");
     if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
   };
 
