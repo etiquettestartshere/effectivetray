@@ -94,13 +94,13 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect._id}"]`)?.querySelector("button").addEventListener('click', () => {
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect._id}"]`)?.querySelector("button").addEventListener('click', async function () {
         const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
         if (!mode || mode === "selected") {
           const actors = new Set();
           for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
-            _applyEffects(actor, effect, lvl, concentration);
+            await _applyEffects(actor, effect, lvl, concentration);
             tray.classList.add("collapsed");
           };
         } else {
@@ -112,12 +112,12 @@ export class effectiveTray {
             const actors = new Set();
             for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
             for (const actor of actors) {
-              _applyEffects(actor, effect, lvl, concentration);
+               await _applyEffects(actor, effect, lvl, concentration);
               tray.classList.add("collapsed");
             }
           } else {
             const origin = effect.uuid;
-            game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
+            await game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
             tray.classList.add("collapsed");
           };
         };
@@ -125,7 +125,7 @@ export class effectiveTray {
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', event => {
+        tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', async function (event) {
           event.stopPropagation();
           event.preventDefault();
           if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
@@ -134,12 +134,12 @@ export class effectiveTray {
             const actors = new Set();
             for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
             for (const actor of actors) {
-              _applyEffects(actor, effect, lvl, concentration);
+              await _applyEffects(actor, effect, lvl, concentration);
               tray.classList.add("collapsed");
             }
           } else {
             const origin = effect.uuid;
-            game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
+            await game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
             tray.classList.add("collapsed");
           };
         });
@@ -148,13 +148,13 @@ export class effectiveTray {
 
     // Handle expanding and collapsing the tray
     // No longer adhering to the system's deranged behavior of closing it if you click anywhere that isn't a button
-    tray.addEventListener('click', event => {
+    tray.addEventListener('click', function (event) {
       event.stopPropagation();
       event.preventDefault();
     });
     const mid = message.id;
     const upper = tray.querySelector(".roboto-upper");
-    upper.addEventListener('click', event => {
+    upper.addEventListener('click', function (event) {
       event.stopPropagation();
       event.preventDefault();
       if (html.querySelector(".et-uncollapsed")) tray.classList.remove("et-uncollapsed");
@@ -182,7 +182,7 @@ export class effectiveTray {
       const toPress = source.querySelector(`[data-mode="selected"]`);
       toPress.ariaPressed = true;
       for (const mode of source.querySelectorAll(`[data-mode]`)) {
-        mode.addEventListener('click', () => {
+        mode.addEventListener('click', function () {
           source.querySelector(`[aria-pressed="true"]`).ariaPressed = false;
           source.querySelector(`[data-mode="${mode.dataset.mode}"]`).ariaPressed = true;
         });
@@ -193,7 +193,7 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', event => {
+        button.addEventListener('click', function () {
           if (!tray.querySelector(".et-uncollapsed")) {
             tray.classList.add("et-uncollapsed");
             tray.classList.remove("collapsed");
@@ -208,12 +208,12 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
-    tray.addEventListener('click', () => {
+    tray.addEventListener('click', function () {
       if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
       else tray.classList.remove("et-uncollapsed");
     });
     for (const button of buttons) {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', function () {
         tray.classList.add("collapsed");
         tray.classList.remove("et-uncollapsed");
       });
@@ -237,7 +237,7 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (tray) {
       const mid = message.id;
-      tray.addEventListener('click', () => {
+      tray.addEventListener('click', function () {
         if (html.querySelector(".effects-tray.collapsed")) _scroll(mid);
       });
     };
@@ -287,7 +287,7 @@ export class effectiveDamage {
     const mid = message.id;
     if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
     const upper = tray.querySelector(".roboto-upper");
-    upper.addEventListener('click', event => {
+    upper.addEventListener('click', function (event) {
       event.stopPropagation();
       event.preventDefault();
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
@@ -307,7 +307,7 @@ export class effectiveDamage {
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
     const button = tray.querySelector("button.apply-damage");
-    button.addEventListener('click', event => {
+    button.addEventListener('click', function (event) {
       if (game.settings.get(MODULE, "dontCloseOnPress")) {
         event.preventDefault();
         event.stopPropagation();
@@ -318,7 +318,7 @@ export class effectiveDamage {
       };
     });
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-    upper.addEventListener('click', event => {
+    upper.addEventListener('click', function () {
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
         tray.classList.toggle("et-uncollapsed");
         tray.classList.remove("collapsed");
@@ -333,7 +333,7 @@ export class effectiveDamage {
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     if (upper) {
       const mid = message.id;
-      upper.addEventListener('click', () => {
+      upper.addEventListener('click', function () {
         if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
       });
     };
@@ -373,17 +373,17 @@ async function _effectSocket(data) {
     if (target) actors.add(targetActor);
   };
   for (const actor of actors) {
-    _applyEffects(actor, effect, lvl, concentration);
+    await _applyEffects(actor, effect, lvl, concentration);
   };
 };
 
 // Make the GM client apply damage to the socket emitter's targets
-function _damageSocket(data) {
+async function _damageSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const id = data.data.id;
   const options = data.data.options;
   const dmg = data.data.dmg;
-  _applyTargetDamage(id, options, dmg);
+  await _applyTargetDamage(id, options, dmg);
 };
 
 /* -------------------------------------------- */
@@ -413,9 +413,6 @@ async function _applyEffects(actor, effect, lvl, concentration) {
         flags: flags
       });
     } else existingEffect.delete();
-    if (!game.user.isGM && concentration && !concentration.actor?.isOwner) {
-      throw new Error(game.i18n.localize("DND5E.EffectApplyWarningConcentration"));
-    };
   } else {
     const effectData = foundry.utils.mergeObject(effect.toObject(), {
       disabled: false,
@@ -424,7 +421,9 @@ async function _applyEffects(actor, effect, lvl, concentration) {
       flags: flags
     });
     const applied = await ActiveEffect.implementation.create(effectData, { parent: actor });
-    if (concentration) await concentration.addDependent(applied);
+    if (concentration) {
+      await concentration.addDependent(applied);
+    };
     return applied;
   };
 };
