@@ -392,7 +392,7 @@ function _damageSocket(data) {
 
 // Apply effect, or refresh its duration (and level) if it exists
 async function _applyEffects(actor, effect, lvl, concentration) {
-  const origin = concentration ?? effect;
+  const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
   const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
     actor.effects.find(e => e.origin === effect.uuid) :
     actor.effects.find(e => e.origin === origin.uuid);
