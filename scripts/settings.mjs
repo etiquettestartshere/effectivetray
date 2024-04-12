@@ -180,5 +180,16 @@ export class moduleSettings {
       requiresReload: false,
       onChange: false
     });
+
+    game.settings.register(MODULE, "multipleConcentrationEffects", {
+      name: "EFFECTIVETRAY.MultipleConcentrationEffectsSettingName",
+      hint: "EFFECTIVETRAY.MultipleConcentrationEffectsSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: false,
+      onChange: false
+    });
   };
 };
