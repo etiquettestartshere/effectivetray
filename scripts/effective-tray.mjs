@@ -219,10 +219,10 @@ export class effectiveTray {
     if (!game.settings.get(MODULE, "expandEffect")) return;
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
+    const mid = message.id;
     await new Promise(r => setTimeout(r, 100));
     tray.classList.remove("collapsed");
-    if (game.settings.get(MODULE, "systemDefault")) return;
-    tray.classList.remove("collapsed");
+    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
   };
 
   // Check and see if the effects tray needs to be scrolled
@@ -273,9 +273,9 @@ export class effectiveDamage {
   // Expand the damage tray
   static async _expandDamage(message, html) {
     if (!game.settings.get(MODULE, "expandDamage")) return;
+    await new Promise(r => setTimeout(r, 100));
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
-    await new Promise(r => setTimeout(r, 100));
     tray.classList.remove("collapsed");
     tray.classList.add("et-uncollapsed");
     const mid = message.id;
@@ -338,6 +338,21 @@ export class effectiveDamage {
   /*  Socket Handling                             */
   /* -------------------------------------------- */
 
+// Register the socket
+export class effectiveSocket {
+  static init() {
+    game.socket.on(socketID, (data) => {
+      switch (data.type) {
+        case "firstCase":
+          _effectSocket(data);
+          break;
+        case "secondCase":
+          _damageSocket(data);  
+      };
+    });
+  };
+};
+
 // Make the GM client apply effects to the socket emitter's targets
 async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
@@ -362,21 +377,6 @@ function _damageSocket(data) {
   const options = data.data.options;
   const dmg = data.data.dmg;
   _applyTargetDamage(id, options, dmg);
-};
-
-// Register the socket
-export class effectiveSocket {
-  static init() {
-    game.socket.on(socketID, (data) => {
-      switch (data.type) {
-        case "firstCase":
-          _effectSocket(data);
-          break;
-        case "secondCase":
-          _damageSocket(data);  
-      };
-    });
-  };
 };
 
   /* -------------------------------------------- */
