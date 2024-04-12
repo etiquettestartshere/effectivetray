@@ -76,6 +76,8 @@ export class effectiveTray {
     const lvl = message.flags?.dnd5e?.use?.spellLevel;
     for (const effect of effects) {
       const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
+      const con = concentration?.id;
+      const caster = actor.id;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect._id} data-transferred=${effect.transfer}>
@@ -115,7 +117,7 @@ export class effectiveTray {
             }
           } else {
             const origin = effect.uuid;
-            game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, concentration } });
+            game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
             tray.classList.add("collapsed");
           };
         };
@@ -132,12 +134,12 @@ export class effectiveTray {
             const actors = new Set();
             for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
             for (const actor of actors) {
-              _applyEffects(actor, effect, lvl);
+              _applyEffects(actor, effect, lvl, concentration);
               tray.classList.add("collapsed");
             }
           } else {
             const origin = effect.uuid;
-            game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl } });
+            game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
             tray.classList.add("collapsed");
           };
         });
@@ -360,9 +362,9 @@ export class effectiveSocket {
 // Make the GM client apply effects to the socket emitter's targets
 async function _effectSocket(data) {
   if (game.user !== game.users.activeGM) return;
-  const concentration = data.data.concentration;
   const targets = data.data.targets;
   const effect = await fromUuid(data.data.origin);
+  const concentration = game?.actors?.get(data.data.caster)?.effects?.get(data.data.con);
   const lvl = data.data.lvl;
   const actors = new Set();
   for (const target of targets) {
@@ -391,7 +393,9 @@ function _damageSocket(data) {
 // Apply effect, or refresh its duration (and level) if it exists
 async function _applyEffects(actor, effect, lvl, concentration) {
   const origin = concentration ?? effect;
-  const existingEffect = actor.effects.find(e => e.origin === effect.uuid);
+  const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
+    actor.effects.find(e => e.origin === effect.uuid) :
+    actor.effects.find(e => e.origin === origin.uuid);
   let flags;
   if (game.settings.get(MODULE, "flagLevel") && effect?.parent?.type === "spell") {
     flags = foundry.utils.deepClone(effect.flags);

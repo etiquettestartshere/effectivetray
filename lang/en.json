@@ -25,6 +25,8 @@
   "EFFECTIVETRAY.FilterPermissionSettingHint": "Hide effects from users if they originate from actors which the users lack the selected permissions (or below) for.",
   "EFFECTIVETRAY.IgnoreNPCSettingName": "Filter NPCs",
   "EFFECTIVETRAY.IgnoreNPCSettingHint": "Hide effects from users if they originate from NPCs they do not own.",
+  "EFFECTIVETRAY.MultipleConcentrationEffectsSettingName": "Multiple Effects with Concentration",
+  "EFFECTIVETRAY.MultipleConcentrationEffectsSettingHint": "Allow multiple effects to be applied from spells with concentration",
   "EFFECTIVETRAY.NotificationNoTarget": "You don't have a target.",
   "EFFECTIVETRAY.RemoveTransferSettingName": "Remove 'Apply Effect to Actor'",
   "EFFECTIVETRAY.RemoveTransferSettingHint": "On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",

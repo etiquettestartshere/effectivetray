@@ -19,6 +19,7 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Don't Close Trays on Apply**: Don't automatically close trays when hitting submit. Won't work with default effects tray (now off by default).
 - **Scroll on Expand**: Scroll chat to bottom when expanding a tray that is at the bottom (experimental, on by default).
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
+- **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
 ___
 ###### **Technical Details**
 
