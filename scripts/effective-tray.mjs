@@ -47,7 +47,7 @@ export class effectiveTray {
     if (!uuid) return;
     const item = await fromUuid(uuid);
     const effects = item?.effects?.contents;
-    if (!effects) return;
+    if (!effects.length) return;
     const actor = game.actors?.get(message.speaker?.actor);
 
     // Handle filtering
