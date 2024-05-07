@@ -80,7 +80,7 @@ export class effectiveTray {
       const caster = actor.id;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
-        <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect._id} data-transferred=${effect.transfer}>
+        <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
           <img class="gold-icon" alt=${effect.name} src=${effect.icon}>
           <div class="name-stacked">
             <span class="title">${effect.name}</span>
@@ -94,7 +94,7 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect._id}"]`)?.querySelector("button").addEventListener('click', async function () {
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async function () {
         const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
         if (!mode || mode === "selected") {
           const actors = new Set();
@@ -123,7 +123,7 @@ export class effectiveTray {
             }
           } else {
             const origin = effect.uuid;
-            await game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
+            await game.socket.emit(socketID, { type: "effect", data: { origin, targets, lvl, con, caster } });
             if (!game.settings.get(MODULE, "dontCloseOnPress")) {
               tray.classList.add("collapsed");
               tray.classList.remove("et-uncollapsed");
@@ -134,7 +134,7 @@ export class effectiveTray {
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`button[class="apply-${effect.name.slugify().toLowerCase()}"]`).addEventListener('contextmenu', async function (event) {
+        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function (event) {
           event.stopPropagation();
           event.preventDefault();
           if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
@@ -151,7 +151,7 @@ export class effectiveTray {
             }
           } else {
             const origin = effect.uuid;
-            await game.socket.emit(socketID, { type: "firstCase", data: { origin, targets, lvl, con, caster } });
+            await game.socket.emit(socketID, { type: "effect", data: { origin, targets, lvl, con, caster } });
             if (!game.settings.get(MODULE, "dontCloseOnPress")) {
               tray.classList.add("collapsed");
               tray.classList.remove("et-uncollapsed");
@@ -368,10 +368,10 @@ export class effectiveSocket {
   static init() {
     game.socket.on(socketID, (data) => {
       switch (data.type) {
-        case "firstCase":
+        case "effect":
           _effectSocket(data);
           break;
-        case "secondCase":
+        case "damage":
           _damageSocket(data);
       };
     });
@@ -396,13 +396,20 @@ async function _effectSocket(data) {
   };
 };
 
+// id, options, damageType, damageValue, damageProperties 
+
 // Make the GM client apply damage to the socket emitter's targets
 async function _damageSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const id = data.data.id;
   const options = data.data.options;
-  const dmg = data.data.dmg;
-  await _applyTargetDamage(id, options, dmg);
+  const dmg = {}
+  const damages = foundry.utils.mergeObject(dmg, {
+    properties: new Set(data.data.damageProperties),
+    type: data.data.damageType,
+    value: data.data.damageValue
+  })
+  await _applyTargetDamage(id, options, [damages]);
 };
 
 /* -------------------------------------------- */
@@ -419,7 +426,7 @@ async function _applyEffects(actor, effect, lvl, concentration) {
   if (game.settings.get(MODULE, "flagLevel") && effect?.parent?.type === "spell") {
     flags = foundry.utils.deepClone(effect.flags);
     foundry.utils.mergeObject(flags, {
-      effectivetray: {
+      dnd5e: {
         spellLevel: lvl
       }
     });
@@ -443,9 +450,7 @@ async function _applyEffects(actor, effect, lvl, concentration) {
       flags: flags
     });
     const applied = await ActiveEffect.implementation.create(effectData, { parent: actor });
-    if (concentration) {
-      await concentration.addDependent(applied);
-    };
+    if (concentration) await concentration.addDependent(applied);
     return applied;
   };
 };
