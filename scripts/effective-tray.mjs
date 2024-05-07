@@ -403,13 +403,17 @@ async function _damageSocket(data) {
   if (game.user !== game.users.activeGM) return;
   const id = data.data.id;
   const options = data.data.options;
-  const dmg = {}
-  const damages = foundry.utils.mergeObject(dmg, {
-    properties: new Set(data.data.damageProperties),
-    type: data.data.damageType,
-    value: data.data.damageValue
-  })
-  await _applyTargetDamage(id, options, [damages]);
+  const damages = [];
+  for (const damage of data.data.damageData) {
+    const dmg = {}
+    const d = foundry.utils.mergeObject(dmg, {
+      properties: new Set(damage.properties),
+      type: damage.type,
+      value: damage.value
+    });
+    damages.push(d);
+  };
+  await _applyTargetDamage(id, options, damages);
 };
 
 /* -------------------------------------------- */
