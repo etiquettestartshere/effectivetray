@@ -11,7 +11,7 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Legacy Targeting for Effects**: Apply effects to target with right click, rather than the target source control (off by default).
 - **Damage Target**: Allow users to damage targets (that they don't own) with the damage tray (off by default).
 - **Delete Instead of Refresh**: Attempting to transfer an effect to an actor that has it already will delete it rather than refreshing its duration (off by default).
-- **Flag Effects with Level**: Adds a flag to active effects applied via the tray on spell messages indicating the level at which the spell was cast, with the scope `ActiveEffect#flags.effectivetray.spellLevel` (for use with macros or other modules, off by default).
+- **Flag Effects with Level**: Adds a flag to active effects applied via the tray on spell messages indicating the level at which the spell was cast, with the scope `ActiveEffect#flags.dnd5e.spellLevel`. This will be provided by the system in 3.2, so it will be on by default (this setting will be removed in 3.2 and enabled for all installs).
 - **Filtering** based on actor type, permissions, and token disposition. This prevents users from seeing and interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
 - **Use Default Trays**: Adds settings (off by default) to use the default effects and damage trays. Only the features *below* this setting will function if a given tray is in its default mode.
 - **Expand Effects Tray**: The effect tray on chat messages starts in its expanded position when the message is created (on by default).
