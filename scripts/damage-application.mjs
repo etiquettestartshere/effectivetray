@@ -77,11 +77,18 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         await token?.applyDamage(this.damages, options);
       }
       else {
-        const damageProperties = Array.from(this.damages.at(0).properties);
-        const damageType = this.damages.at(0).type;
-        const damageValue = this.damages.at(0).value;
-        const id = target.dataset.targetUuid
-        game.socket.emit(socketID, { type: "damage", data: { id, options, damageProperties, damageType, damageValue } });
+        const damageData = []
+        for (const d of this.damages) {
+          const damage = {}
+          foundry.utils.mergeObject(damage, {
+            properties: Array.from(d.properties),
+            type: d.type,
+            value: d.value
+          });
+          damageData.push(damage);
+        };
+        const id = target.dataset.targetUuid;
+        game.socket.emit(socketID, { type: "damage", data: { id, options, damageData } });
       };
     }
     this.querySelector(".collapsible").dispatchEvent(new PointerEvent("click", { bubbles: true, cancelable: true }));
