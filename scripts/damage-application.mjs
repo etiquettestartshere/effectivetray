@@ -2,12 +2,18 @@ import { socketID } from "./const.mjs";
 
   /* -------------------------------------------- */
   /*  Damage Application Extension (from dnd5e)   */
+  /*  Refer to dnd5e for full documentation             */
   /* -------------------------------------------- */
 
 const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2, "2"]];
 
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
 
+  /**
+  * Create a list entry for a single target.
+  * @param {string} uuid  UUID of the token represented by this entry.
+  * Extends this method to remove checking for token owner.
+  */
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
 
@@ -68,27 +74,33 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     return li;
   }
 
+  /**
+   * Handle clicking the apply damage button.
+   * @param {PointerEvent} event  Triggering click event.
+   * Extends this method to emit a request for the active GM client to damage a non-owned actor.
+   * Special handling is required for the Set `this.damages.properties`.
+   */
   async _onApplyDamage(event) {
     event.preventDefault();
     for (const target of this.targetList.querySelectorAll("[data-target-uuid]")) {
-      const token = fromUuidSync(target.dataset.targetUuid);
-      const options = this.getTargetOptions(target.dataset.targetUuid);
+      const id = target.dataset.targetUuid;
+      const token = fromUuidSync(id);
+      const options = this.getTargetOptions(id);
       if (token?.isOwner) {
         await token?.applyDamage(this.damages, options);
       }
       else {
-        const damageData = []
+        const damage = []
         for (const d of this.damages) {
-          const damage = {}
-          foundry.utils.mergeObject(damage, {
+          const damageObject = {
             properties: Array.from(d.properties),
             type: d.type,
             value: d.value
-          });
-          damageData.push(damage);
+          };
+          damage.push(damageObject);
         };
-        const id = target.dataset.targetUuid;
-        game.socket.emit(socketID, { type: "damage", data: { id, options, damageData } });
+        if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
+        await game.socket.emit(socketID, { type: "damage", data: { id, options, damage } });
       };
     }
     this.querySelector(".collapsible").dispatchEvent(new PointerEvent("click", { bubbles: true, cancelable: true }));

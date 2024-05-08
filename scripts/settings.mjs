@@ -24,7 +24,7 @@ export class moduleSettings {
       scope: "client",
       config: true,
       type: Boolean,
-      default: false,
+      default: true,
       requiresReload: true,
       onChange: false
     });
@@ -82,7 +82,7 @@ export class moduleSettings {
       default: 0,
       requiresReload: true,
       choices: {
-        0: "EFFECTIVETRAY.SettingsNoFilter",
+        0: "EFFECTIVETRAY.NoFilter",
         1: "OWNERSHIP.LIMITED",
         2: "OWNERSHIP.OBSERVER"
       }
@@ -97,7 +97,7 @@ export class moduleSettings {
       default: 0,
       requiresReload: true,
       choices: {
-        0: "EFFECTIVETRAY.SettingsNoFilter",
+        0: "EFFECTIVETRAY.NoFilter",
         1: "TOKEN.DISPOSITION.SECRET",
         2: "TOKEN.DISPOSITION.HOSTILE",
         3: "TOKEN.DISPOSITION.NEUTRAL"
@@ -160,8 +160,8 @@ export class moduleSettings {
     });
 
     game.settings.register(MODULE, "scrollOnExpand", {
-      name: "EFFECTIVETRAY.ScrollOnExpandName",
-      hint: "EFFECTIVETRAY.ScrollOnExpandHint",
+      name: "EFFECTIVETRAY.ScrollOnExpandSettingName",
+      hint: "EFFECTIVETRAY.ScrollOnExpandSettingHint",
       scope: "client",
       config: true,
       type: Boolean,

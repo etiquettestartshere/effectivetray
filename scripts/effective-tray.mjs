@@ -25,7 +25,10 @@ export class effectiveTray {
     window.ui.chat.scrollBottom({ popout: true });
   };
 
-  // Remove transfer from all effects with duration
+  /**
+  * Remove transfer from all effects with duration
+  * @param {Item} item The item from which to remove "transfer": true.
+  */
   static _removeTransfer(item) {
     if (!game.settings.get(MODULE, "removeTransfer")) return;
     const effects = item.effects.contents;
@@ -39,7 +42,12 @@ export class effectiveTray {
     };
   };
 
-  // Make the tray effective
+  /**
+  * Make the effects tray effective
+  * @param {ChatMessage5e} message The message on which the tray resides.
+  * @param {HTMLElement} html HTML contents of the message.
+  * Methods lacking documentation below share these parameters.
+  */
   static async _effectTray(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
@@ -48,7 +56,7 @@ export class effectiveTray {
     const item = await fromUuid(uuid);
     const effects = item?.effects?.contents;
     if (foundry.utils.isEmpty(effects)) return;
-    const actor = game.actors?.get(message.speaker?.actor);
+    const actor = item.parent;
 
     // Handle filtering
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
@@ -70,14 +78,13 @@ export class effectiveTray {
     if (old) for (const oldEffect of old) oldEffect.remove();
     const tooltip = (game.settings.get(MODULE, "allowTarget")) ? (
       game.settings.get(MODULE, "contextTarget") ?
-        "EFFECTIVETRAY.EffectsApplyTokensLegacy" :
-        "EFFECTIVETRAY.EffectsApplyTokens"
+        "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokensLegacy" :
+        "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokens"
     ) : "DND5E.EffectsApplyTokens";
     const lvl = message.flags?.dnd5e?.use?.spellLevel;
     for (const effect of effects) {
       const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
-      const con = concentration?.id;
-      const caster = actor.id;
+      const caster = actor.uuid;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
@@ -94,7 +101,7 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async function () {
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async function() {
         const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
         if (!mode || mode === "selected") {
           const actors = new Set();
@@ -107,69 +114,29 @@ export class effectiveTray {
             };  
           };
         } else {
-
-          // Handle applying effects to targets: handle it if you can handle it, else emit a socket
-          if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
-          const targets = Array.from(game.user.targets).map(i => i.document.uuid)
-          if (game.user.isGM) {
-            const actors = new Set();
-            for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
-            for (const actor of actors) {
-              await _applyEffects(actor, effect, lvl, concentration);
-              if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-                tray.classList.add("collapsed");
-                tray.classList.remove("et-uncollapsed");
-              };
-            }
-          } else {
-            const origin = effect.uuid;
-            await game.socket.emit(socketID, { type: "effect", data: { origin, targets, lvl, con, caster } });
-            if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-              tray.classList.add("collapsed");
-              tray.classList.remove("et-uncollapsed");
-            };
-          };
+          _effectApplicationHandler(tray, effect, lvl, concentration, caster);
         };
       });
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function (event) {
+        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function(event) {
           event.stopPropagation();
           event.preventDefault();
-          if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NotificationNoTarget"));
-          const targets = Array.from(game.user.targets).map(i => i.document.uuid)
-          if (game.user.isGM) {
-            const actors = new Set();
-            for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
-            for (const actor of actors) {
-              await _applyEffects(actor, effect, lvl, concentration);
-              if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-                tray.classList.add("collapsed");
-                tray.classList.remove("et-uncollapsed");
-              };  
-            }
-          } else {
-            const origin = effect.uuid;
-            await game.socket.emit(socketID, { type: "effect", data: { origin, targets, lvl, con, caster } });
-            if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-              tray.classList.add("collapsed");
-              tray.classList.remove("et-uncollapsed");
-            };  
-          };
+          _effectApplicationHandler(tray, effect, lvl, concentration, caster);
         });
       };
     };
 
     // Handle expanding and collapsing the tray
     // No longer adhering to the system's deranged behavior of closing it if you click anywhere that isn't a button
-    tray.addEventListener('click', function (event) {
+    tray.addEventListener('click', (event) => {
       event.stopPropagation();
       event.preventDefault();
     });
     const mid = message.id;
     const upper = tray.querySelector(".roboto-upper");
-    upper.addEventListener('click', function (event) {
+    upper.addEventListener('click', (event) => {
       event.stopPropagation();
       event.preventDefault();
       if (html.querySelector(".et-uncollapsed")) {
@@ -199,7 +166,7 @@ export class effectiveTray {
       const toPress = source.querySelector(`[data-mode="selected"]`);
       toPress.ariaPressed = true;
       for (const mode of source.querySelectorAll(`[data-mode]`)) {
-        mode.addEventListener('click', function () {
+        mode.addEventListener('click', () => {
           source.querySelector(`[aria-pressed="true"]`).ariaPressed = false;
           source.querySelector(`[data-mode="${mode.dataset.mode}"]`).ariaPressed = true;
         });
@@ -210,7 +177,7 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', async function () {
+        button.addEventListener('click', async function() {
           if (!tray.querySelector(".et-uncollapsed")) {
             await tray.classList.add("et-uncollapsed");
             await new Promise(r => setTimeout(r, 108));
@@ -226,12 +193,12 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
-    tray.addEventListener('click', function () {
+    tray.addEventListener('click', () => {
       if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
       else tray.classList.remove("et-uncollapsed");
     });
     for (const button of buttons) {
-      button.addEventListener('click', function () {
+      button.addEventListener('click', () => {
         tray.classList.add("collapsed");
         tray.classList.remove("et-uncollapsed");
       });
@@ -256,7 +223,7 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (tray) {
       const mid = message.id;
-      tray.addEventListener('click', function () {
+      tray.addEventListener('click', () => {
         if (html.querySelector(".effects-tray.collapsed")) _scroll(mid);
       });
     };
@@ -276,7 +243,12 @@ export class effectiveDamage {
     };
   };
 
-  // Make the damage tray effective
+  /**
+  * Make the damage tray effective
+  * @param {ChatMessage5e} message The message on which the tray resides.
+  * @param {HTMLElement} html HTML contents of the message.
+  * Methods lacking documentation below share these parameters.
+  */
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       if (!game.user.isGM) {
@@ -306,7 +278,7 @@ export class effectiveDamage {
     const mid = message.id;
     if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
     const upper = tray.querySelector(".roboto-upper");
-    upper.addEventListener('click', function (event) {
+    upper.addEventListener('click', (event) => {
       event.stopPropagation();
       event.preventDefault();
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
@@ -326,7 +298,7 @@ export class effectiveDamage {
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
     const button = tray.querySelector("button.apply-damage");
-    button.addEventListener('click', function (event) {
+    button.addEventListener('click', (event) => {
       if (game.settings.get(MODULE, "dontCloseOnPress")) {
         event.preventDefault();
         event.stopPropagation();
@@ -337,7 +309,7 @@ export class effectiveDamage {
       };
     });
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-    upper.addEventListener('click', function () {
+    upper.addEventListener('click', () => {
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
         tray.classList.toggle("et-uncollapsed");
         tray.classList.remove("collapsed");
@@ -352,7 +324,7 @@ export class effectiveDamage {
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     if (upper) {
       const mid = message.id;
-      upper.addEventListener('click', function () {
+      upper.addEventListener('click', () => {
         if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
       });
     };
@@ -363,28 +335,32 @@ export class effectiveDamage {
 /*  Socket Handling                             */
 /* -------------------------------------------- */
 
-// Register the socket
+/**
+* Register the socket
+* @param {object} request The information passed via socket to be handled by the GM client.
+*/
 export class effectiveSocket {
   static init() {
-    game.socket.on(socketID, (data) => {
-      switch (data.type) {
+    game.socket.on(socketID, (request) => {
+      switch (request.type) {
         case "effect":
-          _effectSocket(data);
+          _effectSocket(request);
           break;
         case "damage":
-          _damageSocket(data);
+          _damageSocket(request);
       };
     });
   };
 };
 
-// Make the GM client apply effects to the socket emitter's targets
-async function _effectSocket(data) {
+// Make the GM client apply effects to the requested targets
+async function _effectSocket(request) {
   if (game.user !== game.users.activeGM) return;
-  const targets = data.data.targets;
-  const effect = await fromUuid(data.data.origin);
-  const concentration = game?.actors?.get(data.data.caster)?.effects?.get(data.data.con);
-  const lvl = data.data.lvl;
+  const targets = request.data.targets;
+  const effect = await fromUuid(request.data.origin);
+  const c = await fromUuid(request.data.caster);
+  const concentration = c?.effects?.get(request.data.con);
+  const lvl = request.data.lvl;
   const actors = new Set();
   for (const target of targets) {
     const token = await fromUuid(target);
@@ -396,31 +372,68 @@ async function _effectSocket(data) {
   };
 };
 
-// id, options, damageType, damageValue, damageProperties 
-
-// Make the GM client apply damage to the socket emitter's targets
-async function _damageSocket(data) {
+// Make the GM client apply damage to the requested targets
+// Convert damage properties back from an Array into a Set
+async function _damageSocket(request) {
   if (game.user !== game.users.activeGM) return;
-  const id = data.data.id;
-  const options = data.data.options;
-  const damages = [];
-  for (const damage of data.data.damageData) {
-    const dmg = {}
-    const d = foundry.utils.mergeObject(dmg, {
-      properties: new Set(damage.properties),
-      type: damage.type,
-      value: damage.value
-    });
-    damages.push(d);
+  const id = request.data.id;
+  const options = request.data.options;
+  const damage = [];
+  for (const d of request.data.damage) {
+    const damageObject = {
+      properties: new Set(d.properties),
+      type: d.type,
+      value: d.value
+    };
+    damage.push(damageObject);
   };
-  await _applyTargetDamage(id, options, damages);
+  return await _applyTargetDamage(id, options, damage);
 };
 
 /* -------------------------------------------- */
 /*  Functions                                   */
 /* -------------------------------------------- */
 
-// Apply effect, or refresh its duration (and level) if it exists
+/**
+* Handle applying effects to targets: handle it if you can handle it, else make a request via socket
+* @param {HTMLElement} tray HTML element that composes the collapsible tray.
+* @param {ActiveEffect5e} effect The effect to create.
+* @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
+* @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+* @param {string} caster The Uuid of the actor which originally cast the spell requiring concentration.
+*/
+async function _effectApplicationHandler(tray, effect, lvl, concentration, caster) {
+  if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
+  const targets = Array.from(game.user.targets).map(i => i.document.uuid)
+  if (game.user.isGM) {
+    const actors = new Set();
+    for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
+    for (const actor of actors) {
+      await _applyEffects(actor, effect, lvl, concentration);
+      if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+        tray.classList.add("collapsed");
+        tray.classList.remove("et-uncollapsed");
+      };
+    };
+  } else {
+    if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
+    const origin = effect.uuid;
+    const con = concentration?.id;
+    await game.socket.emit(socketID, { type: "effect", data: { origin, targets, lvl, con, caster } });
+    if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+      tray.classList.add("collapsed");
+      tray.classList.remove("et-uncollapsed");
+    };
+  };
+};
+
+/**
+* Apply effect, or refresh its duration (and level) if it exists
+* @param {Actor5e} actor The actor to create the effect on.
+* @param {ActiveEffect5e} effect The effect to create.
+* @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
+* @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+*/
 async function _applyEffects(actor, effect, lvl, concentration) {
   const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
   const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
@@ -459,13 +472,21 @@ async function _applyEffects(actor, effect, lvl, concentration) {
   };
 };
 
-// Apply damage
-async function _applyTargetDamage(id, options, dmg) {
+/**
+* Apply damage
+* @param {string} id The id of the actor to apply damage to.
+* @param {object} options The options provided by the tray, primarily the multiplier.
+* @param {array} damage An array of objects with the damage type and value that also contain Sets with damage properties.
+*/
+async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
-  await actor.applyDamage(dmg, options);
+  await actor.applyDamage(damage, options);
 };
 
-// Scroll tray to bottom if at bottom
+/**
+* Scroll tray to bottom if at bottom
+* @param {string} mid The message id.
+*/
 async function _scroll(mid) {
   if (mid !== game.messages.contents.at(-1).id) return;
   if (window.ui.chat.isAtBottom) {
