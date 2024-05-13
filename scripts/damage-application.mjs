@@ -7,7 +7,7 @@ import { MODULE, socketID } from "./const.mjs";
 /**
 * Check targets for ownership when determining which target selection mode to use.
 * @param {Array} targets  Array of objects with target data, including UUID.
- * @returns {boolean}
+* @returns {boolean}
 */
 async function ownershipCheck(targets) {
   for (const target of targets) {
@@ -28,6 +28,9 @@ const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2
 
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
 
+  /**
+  * Determine which target selection mode to use based on damageTarget setting state.
+  */
   /** @override */
   async connectedCallback() {
     // Fetch the associated chat message
@@ -73,6 +76,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       );
       if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
 
+      // If damageTarget setting is disabled, check if users own any targeted tokens, otherwise use "selected" mode
       if (!game.settings.get(MODULE, "damageTarget")) {
         const targets = this.chatMessage.getFlag("dnd5e", "targets");
         if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
@@ -154,11 +158,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   }
 
   /**
-   * Handle clicking the apply damage button.
-   * @param {PointerEvent} event  Triggering click event.
-   * Extends this method to emit a request for the active GM client to damage a non-owned actor.
-   * Special handling is required for the Set `this.damages.properties`.
-   */
+  * Handle clicking the apply damage button.
+  * @param {PointerEvent} event  Triggering click event.
+  * Extends this method to emit a request for the active GM client to damage a non-owned actor.
+  * Special handling is required for the Set `this.damages.properties`.
+  */
   /** @override */
   async _onApplyDamage(event) {
     event.preventDefault();
