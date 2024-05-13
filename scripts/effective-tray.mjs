@@ -101,7 +101,7 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async function() {
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async() => {
         const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
         if (!mode || mode === "selected") {
           const actors = new Set();
@@ -177,12 +177,12 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', async function() {
+        button.addEventListener('click', async() => {
           if (!tray.querySelector(".et-uncollapsed")) {
             await tray.classList.add("et-uncollapsed");
             await new Promise(r => setTimeout(r, 108));
             await tray.classList.remove("collapsed");
-          }
+          };
         });
       };
     };
@@ -253,9 +253,7 @@ export class effectiveDamage {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       if (!game.user.isGM) {
         if (message.whisper.length && !message.whisper.includes(game.user.id)) return;
-        const damageApplication = game.settings.get(MODULE, "damageTarget") ?
-          document.createElement("effective-damage-application") :
-          document.createElement("damage-application");
+        const damageApplication = document.createElement("effective-damage-application");
         damageApplication.classList.add("dnd5e2");
         damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
           value: roll.total,
@@ -373,20 +371,17 @@ async function _effectSocket(request) {
 };
 
 // Make the GM client apply damage to the requested targets
-// Convert damage properties back from an Array into a Set
 async function _damageSocket(request) {
   if (game.user !== game.users.activeGM) return;
   const id = request.data.id;
   const options = request.data.options;
   const damage = [];
-  for (const d of request.data.damage) {
-    const damageObject = {
-      properties: new Set(d.properties),
-      type: d.type,
-      value: d.value
-    };
-    damage.push(damageObject);
-  };
+
+  // Convert damage properties back into a Set for damage application
+  request.data.damage.forEach(d => {
+    foundry.utils.mergeObject(d, { properties: new Set(d.properties) });
+    damage.push(d);
+  });
   return await _applyTargetDamage(id, options, damage);
 };
 
