@@ -1,19 +1,97 @@
-import { socketID } from "./const.mjs";
+import { MODULE, socketID } from "./const.mjs";
 
-  /* -------------------------------------------- */
-  /*  Damage Application Extension (from dnd5e)   */
-  /*  Refer to dnd5e for full documentation             */
-  /* -------------------------------------------- */
+/* -------------------------------------------- */
+/*  Functions                                   */
+/* -------------------------------------------- */
+
+/**
+* Check targets for ownership when determining which target selection mode to use.
+* @param {Array} targets  Array of objects with target data, including UUID.
+ * @returns {boolean}
+*/
+async function ownershipCheck(targets) {
+  for (const target of targets) {
+    const token = await fromUuid(target.uuid);
+    if (token?.isOwner) return true;
+    else continue;
+  };
+  return false;
+};
+
+
+/* -------------------------------------------- */
+/*  Damage Application Extension (from dnd5e)   */
+/*  Refer to dnd5e for full documentation             */
+/* -------------------------------------------- */
 
 const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2, "2"]];
 
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
+
+  /** @override */
+  async connectedCallback() {
+    // Fetch the associated chat message
+    const messageId = this.closest("[data-message-id]")?.dataset.messageId;
+    this.chatMessage = game.messages.get(messageId);
+    if (!this.chatMessage) return;
+
+    // Build the frame HTML only once (technically, we've built it twice by this point :weary:)
+    if (!this.targetList) {
+      const div = document.createElement("div");
+      div.classList.add("card-tray", "damage-tray", "collapsible", "collapsed");
+      div.innerHTML = `
+        <label class="roboto-upper">
+          <i class="fa-solid fa-heart-crack"></i>
+          <span>${game.i18n.localize("DND5E.Apply")}</span>
+          <i class="fa-solid fa-caret-down"></i>
+        </label>
+        <div class="collapsible-content">
+          <div class="wrapper">
+            <div class="target-source-control">
+              <button type="button" class="unbutton" data-mode="targeted" aria-pressed="false">
+                <i class="fa-solid fa-bullseye" inert></i> ${game.i18n.localize("DND5E.Tokens.Targeted")}
+              </button>
+              <button type="button" class="unbutton" data-mode="selected" aria-pressed="false">
+                <i class="fa-solid fa-expand" inert></i> ${game.i18n.localize("DND5E.Tokens.Selected")}
+              </button>
+            </div>
+            <ul class="targets unlist"></ul>
+            <button class="apply-damage" type="button" data-action="applyDamage">
+              <i class="fa-solid fa-reply-all fa-flip-horizontal" inert></i>
+              ${game.i18n.localize("DND5E.Apply")}
+            </button>
+          </div>
+        </div>
+      `;
+      this.replaceChildren(div);
+      this.applyButton = div.querySelector(".apply-damage");
+      this.applyButton.addEventListener("click", this._onApplyDamage.bind(this));
+      this.targetList = div.querySelector(".targets");
+      this.targetSourceControl = this.querySelector(".target-source-control");
+      this.targetSourceControl.querySelectorAll("button").forEach(b =>
+        b.addEventListener("click", this._onChangeTargetMode.bind(this))
+      );
+      if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
+
+      if (!game.settings.get(MODULE, "damageTarget")) {
+        const targets = this.chatMessage.getFlag("dnd5e", "targets");
+        if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
+      };
+
+      div.querySelector(".collapsible-content").addEventListener("click", event => {
+        event.stopImmediatePropagation();
+      });
+    }
+
+    this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
+  }
 
   /**
   * Create a list entry for a single target.
   * @param {string} uuid  UUID of the token represented by this entry.
   * Extends this method to remove checking for token owner.
   */
+  /** @override */
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
 
@@ -84,6 +162,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
    * Extends this method to emit a request for the active GM client to damage a non-owned actor.
    * Special handling is required for the Set `this.damages.properties`.
    */
+  /** @override */
   async _onApplyDamage(event) {
     event.preventDefault();
     for (const target of this.targetList.querySelectorAll("[data-target-uuid]")) {
@@ -107,4 +186,4 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     }
     this.open = false;
   }
-};
+}
