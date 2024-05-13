@@ -18,10 +18,10 @@ async function ownershipCheck(targets) {
 };
 
 
-  /* -------------------------------------------- */
-  /*  Damage Application Extension (from dnd5e)   */
-  /*  Refer to dnd5e for full documentation             */
-  /* -------------------------------------------- */
+/* -------------------------------------------- */
+/*  Damage Application Extension (from dnd5e)   */
+/*  Refer to dnd5e for full documentation             */
+/* -------------------------------------------- */
 
 const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2, "2"]];
 
@@ -32,10 +32,10 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     // Fetch the associated chat message
     const messageId = this.closest("[data-message-id]")?.dataset.messageId;
     this.chatMessage = game.messages.get(messageId);
-    if ( !this.chatMessage ) return;
+    if (!this.chatMessage) return;
 
     // Build the frame HTML only once (technically, we've built it twice by this point :weary:)
-    if ( !this.targetList ) {
+    if (!this.targetList) {
       const div = document.createElement("div");
       div.classList.add("card-tray", "damage-tray", "collapsible", "collapsed");
       div.innerHTML = `
@@ -70,11 +70,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       this.targetSourceControl.querySelectorAll("button").forEach(b =>
         b.addEventListener("click", this._onChangeTargetMode.bind(this))
       );
-      if ( !this.chatMessage.getFlag("dnd5e", "targets")?.length ) this.targetSourceControl.hidden = true;
+      if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
 
       if (!game.settings.get(MODULE, "damageTarget")) {
         const targets = this.chatMessage.getFlag("dnd5e", "targets");
-        if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true; 
+        if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
       };
 
       div.querySelector(".collapsible-content").addEventListener("click", event => {
