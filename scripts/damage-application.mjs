@@ -7,6 +7,7 @@ import { MODULE, socketID } from "./const.mjs";
 /**
 * Check targets for ownership when determining which target selection mode to use.
 * @param {Array} targets  Array of objects with target data, including UUID.
+ * @returns {boolean}
 */
 async function ownershipCheck(targets) {
   for (const target of targets) {
