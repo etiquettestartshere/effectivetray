@@ -94,6 +94,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   /** @override */
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
+    if (!token?.isOwner) return;
 
     const targetOptions = this.getTargetOptions(uuid);
     const { total, active } = this.calculateDamage(token, targetOptions);
