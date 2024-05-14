@@ -160,11 +160,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   }
 
   /**
-  * Handle clicking the apply damage button.
-  * @param {PointerEvent} event  Triggering click event.
-  * Extends this method to emit a request for the active GM client to damage a non-owned actor.
-  * Special handling is required for the Set `this.damages.properties`.
-  */
+   * Handle clicking the apply damage button.
+   * @param {PointerEvent} event  Triggering click event.
+   * Extends this method to emit a request for the active GM client to damage a non-owned actor.
+   * Special handling is required for the Set `this.damages.properties`.
+   */
   /** @override */
   async _onApplyDamage(event) {
     event.preventDefault();
