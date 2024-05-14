@@ -103,15 +103,15 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     const { temp, total, active } = this.calculateDamage(token, targetOptions);
 
     const types = [];
-    for ( const [change, values] of Object.entries(active) ) {
-      for ( const type of values ) {
+    for (const [change, values] of Object.entries(active)) {
+      for (const type of values) {
         const config = CONFIG.DND5E.damageTypes[type] ?? CONFIG.DND5E.healingTypes[type];
-        if ( !config ) continue;
+        if (!config) continue;
         const data = { type, change, icon: config.icon };
         types.push(data);
       }
     }
-    const changeSources = types.reduce((acc, {type, change, icon}) => {
+    const changeSources = types.reduce((acc, { type, change, icon }) => {
       const { label, pressed } = this.getChangeSourceOptions(type, change, targetOptions);
       acc += `
         <button class="change-source unbutton" type="button" data-type="${type}" data-change="${change}"
@@ -143,7 +143,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     `;
 
     const menu = li.querySelector("menu");
-    for ( const [value, display] of MULTIPLIERS ) {
+    for (const [value, display] of MULTIPLIERS) {
       const entry = document.createElement("li");
       entry.innerHTML = `
         <button class="multiplier-button" type="button" value="${value}">
