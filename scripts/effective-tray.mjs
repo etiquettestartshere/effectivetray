@@ -26,9 +26,9 @@ export class effectiveTray {
   };
 
   /**
-  * Remove transfer from all effects with duration
-  * @param {Item} item The item from which to remove "transfer": true.
-  */
+   * Remove transfer from all effects with duration
+   * @param {Item} item The item from which to remove "transfer": true.
+   */
   static _removeTransfer(item) {
     if (!game.settings.get(MODULE, "removeTransfer")) return;
     const effects = item.effects.contents;
@@ -43,11 +43,11 @@ export class effectiveTray {
   };
 
   /**
-  * Make the effects tray effective
-  * @param {ChatMessage5e} message The message on which the tray resides.
-  * @param {HTMLElement} html HTML contents of the message.
-  * Methods lacking documentation below share these parameters.
-  */
+   * Make the effects tray effective
+   * @param {ChatMessage5e} message The message on which the tray resides.
+   * @param {HTMLElement} html HTML contents of the message.
+   * Methods lacking documentation below share these parameters.
+   */
   static async _effectTray(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
@@ -244,11 +244,11 @@ export class effectiveDamage {
   };
 
   /**
-  * Make the damage tray effective
-  * @param {ChatMessage5e} message The message on which the tray resides.
-  * @param {HTMLElement} html HTML contents of the message.
-  * Methods lacking documentation below share these parameters.
-  */
+   * Make the damage tray effective
+   * @param {ChatMessage5e} message The message on which the tray resides.
+   * @param {HTMLElement} html HTML contents of the message.
+   * Methods lacking documentation below share these parameters.
+   */
   static _damageTray(message, html) {
     if (message.flags?.dnd5e?.roll?.type === "damage") {
       if (!game.user.isGM) {
@@ -334,9 +334,9 @@ export class effectiveDamage {
 /* -------------------------------------------- */
 
 /**
-* Register the socket
-* @param {object} request The information passed via socket to be handled by the GM client.
-*/
+ * Register the socket
+ * @param {object} request The information passed via socket to be handled by the GM client.
+ */
 export class effectiveSocket {
   static init() {
     game.socket.on(socketID, (request) => {
@@ -374,15 +374,20 @@ async function _effectSocket(request) {
 async function _damageSocket(request) {
   if (game.user !== game.users.activeGM) return;
   const id = request.data.id;
-  const options = request.data.options;
-  const damage = [];
+  const opts = request.data.opts;
 
   // Convert damage properties back into a Set for damage application
+  const damage = [];
   request.data.damage.forEach(d => {
     foundry.utils.mergeObject(d, { properties: new Set(d.properties) });
     damage.push(d);
   });
-  return await _applyTargetDamage(id, options, damage);
+  if (opts?.downgrade) foundry.utils.mergeObject(opts, { downgrade: new Set(opts.downgrade) });
+  if (opts?.ignore?.immunity) foundry.utils.mergeObject(opts, { "ignore.immunity": new Set(opts.ignore.immunity) });
+  if (opts?.ignore?.resistance) foundry.utils.mergeObject(opts, { "ignore.resistance": new Set(opts.ignore.resistance) });
+  if (opts?.ignore?.vulnerability) foundry.utils.mergeObject(opts, { "ignore.vulnerability": new Set(opts.ignore.vulnerability) });
+  if (opts?.ignore?.modification) foundry.utils.mergeObject(opts, { "ignore.modification": new Set(opts.ignore.modification) });
+  return await _applyTargetDamage(id, opts, damage);
 };
 
 /* -------------------------------------------- */
@@ -390,13 +395,13 @@ async function _damageSocket(request) {
 /* -------------------------------------------- */
 
 /**
-* Handle applying effects to targets: handle it if you can handle it, else make a request via socket
-* @param {HTMLElement} tray HTML element that composes the collapsible tray.
-* @param {ActiveEffect5e} effect The effect to create.
-* @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
-* @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
-* @param {string} caster The Uuid of the actor which originally cast the spell requiring concentration.
-*/
+ * Handle applying effects to targets: handle it if you can handle it, else make a request via socket
+ * @param {HTMLElement} tray HTML element that composes the collapsible tray.
+ * @param {ActiveEffect5e} effect The effect to create.
+ * @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {string} caster The Uuid of the actor which originally cast the spell requiring concentration.
+ */
 async function _effectApplicationHandler(tray, effect, lvl, concentration, caster) {
   if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
   const targets = Array.from(game.user.targets).map(i => i.document.uuid)
@@ -423,12 +428,12 @@ async function _effectApplicationHandler(tray, effect, lvl, concentration, caste
 };
 
 /**
-* Apply effect, or refresh its duration (and level) if it exists
-* @param {Actor5e} actor The actor to create the effect on.
-* @param {ActiveEffect5e} effect The effect to create.
-* @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
-* @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
-*/
+ * Apply effect, or refresh its duration (and level) if it exists
+ * @param {Actor5e} actor The actor to create the effect on.
+ * @param {ActiveEffect5e} effect The effect to create.
+ * @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+ */
 async function _applyEffects(actor, effect, lvl, concentration) {
   const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
   const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
@@ -468,20 +473,20 @@ async function _applyEffects(actor, effect, lvl, concentration) {
 };
 
 /**
-* Apply damage
-* @param {string} id The id of the actor to apply damage to.
-* @param {object} options The options provided by the tray, primarily the multiplier.
-* @param {array} damage An array of objects with the damage type and value that also contain Sets with damage properties.
-*/
+ * Apply damage
+ * @param {string} id The id of the actor to apply damage to.
+ * @param {object} options The options provided by the tray, primarily the multiplier.
+ * @param {array} damage An array of objects with the damage type and value that also contain Sets with damage properties.
+ */
 async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
   await actor.applyDamage(damage, options);
 };
 
 /**
-* Scroll tray to bottom if at bottom
-* @param {string} mid The message id.
-*/
+ * Scroll tray to bottom if at bottom
+ * @param {string} mid The message id.
+ */
 async function _scroll(mid) {
   if (mid !== game.messages.contents.at(-1).id) return;
   if (window.ui.chat.isAtBottom) {
