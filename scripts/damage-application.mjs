@@ -5,10 +5,10 @@ import { MODULE, socketID } from "./const.mjs";
 /* -------------------------------------------- */
 
 /**
-* Check targets for ownership when determining which target selection mode to use.
-* @param {Array} targets  Array of objects with target data, including UUID.
-* @returns {boolean}
-*/
+ * Check targets for ownership when determining which target selection mode to use.
+ * @param {Array} targets  Array of objects with target data, including UUID.
+ * @returns {boolean}
+ */
 async function ownershipCheck(targets) {
   for (const target of targets) {
     const token = await fromUuid(target.uuid);
@@ -18,10 +18,9 @@ async function ownershipCheck(targets) {
   return false;
 };
 
-
 /* -------------------------------------------- */
 /*  Damage Application Extension (from dnd5e)   */
-/*  Refer to dnd5e for full documentation             */
+/*  Refer to dnd5e for full documentation       */
 /* -------------------------------------------- */
 
 const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2, "2"]];
@@ -29,8 +28,8 @@ const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
 
   /**
-  * Determine which target selection mode to use based on damageTarget setting state.
-  */
+   * Determine which target selection mode to use based on damageTarget setting state.
+   */
   /** @override */
   async connectedCallback() {
     // Fetch the associated chat message
@@ -91,10 +90,10 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   }
 
   /**
-  * Create a list entry for a single target.
-  * @param {string} uuid  UUID of the token represented by this entry.
-  * Extends this method to remove checking for token owner.
-  */
+   * Create a list entry for a single target.
+   * @param {string} uuid  UUID of the token represented by this entry.
+   * Extends this method to remove checking for token owner.
+   */
   /** @override */
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
@@ -177,15 +176,21 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         await token?.applyDamage(this.damages, options);
       }
       else {
-        const damage = [];
 
         // Convert damage properties to an Array for socket emission
-        this.damages.forEach(d => {
+        if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
+        const damage = [];
+        foundry.utils.deepClone(this.damages).forEach(d => {
           foundry.utils.mergeObject(d, { properties: Array.from(d.properties) });
           damage.push(d);
         });
-        if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
-        await game.socket.emit(socketID, { type: "damage", data: { id, options, damage } });
+        const opts = foundry.utils.deepClone(options);
+        if (opts?.downgrade) foundry.utils.mergeObject(opts, { downgrade: Array.from(opts.downgrade) });
+        if (opts?.ignore?.immunity) foundry.utils.mergeObject(opts, { "ignore.immunity": Array.from(opts.ignore.immunity) });
+        if (opts?.ignore?.resistance) foundry.utils.mergeObject(opts, { "ignore.resistance": Array.from(opts.ignore.resistance) });
+        if (opts?.ignore?.vulnerability) foundry.utils.mergeObject(opts, { "ignore.vulnerability": Array.from(opts.ignore.vulnerability) });
+        if (opts?.ignore?.modification) foundry.utils.mergeObject(opts, { "ignore.modification": Array.from(opts.ignore.modification) });
+        await game.socket.emit(socketID, { type: "damage", data: { id, opts, damage } });
       };
     }
     this.open = false;
