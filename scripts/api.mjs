@@ -18,7 +18,7 @@ export class API {
    * Helper function to allow for macros or other applications to make a socket request to apply damage.
    * @param {string|object|ActiveEffect} effect The effect to apply. Can handle Uuid, effect data as an object, or an ActiveEffect proper.
    * @param {set|array|string} targets Targeted tokens. Handles `game.user.targets`, or any generic array of token placeables.
-   * @param {number|void} effectData A generic data object, which typically handleshe level the originating spell was cast at, 
+   * @param {number|void} effectData A generic data object, which typically handles the level the originating spell was cast at, 
    *                                 if it originated from a spell, if any. Use flags like { "flags.dnd5e.spellLevel": 1 }.
    * @param {string|void} concentration The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
    * @param {string|Actor5e|void} caster The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
