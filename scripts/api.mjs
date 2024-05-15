@@ -15,12 +15,13 @@ export class API {
   /* -------------------------------------------- */
 
   /**
-   * Helper function to allow for macros or other applications make a socket request to apply damage.
-   * @param {string|object|ActiveEffect} effect The effect to apply. Can handle UUID, effect data as an object, or an ActiveEffect proper.
+   * Helper function to allow for macros or other applications to make a socket request to apply damage.
+   * @param {string|object|ActiveEffect} effect The effect to apply. Can handle Uuid, effect data as an object, or an ActiveEffect proper.
    * @param {set|array|string} targets Targeted tokens. Handles `game.user.targets`, or any generic array of token placeables.
-   * @param {number|void} effectData The level the originating spell was cast at, if it originated from a spell, if any.
-   * @param {string|void} concentration The ID (not UUID) of the concentration effect this effect is dependent on, if any.
-   * @param {string|Actor5e|void} caster The UUID or Actor5e document of the actor that cast the spell that requires concentration, if any.
+   * @param {number|void} effectData A generic data object, which typically handleshe level the originating spell was cast at, 
+   *                                 if it originated from a spell, if any. Use flags like { "flags.dnd5e.spellLevel": 1 }.
+   * @param {string|void} concentration The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
+   * @param {string|Actor5e|void} caster The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
    */
   static async applyEffect(effect, targets, data = {effectData: null, concentration: null, caster: null}) {
 
@@ -66,10 +67,13 @@ export class API {
     if (data?.caster instanceof Actor) spellCaster = data?.caster.uuid;
     else if (foundry.utils.getType(data?.caster) === "string") spellCaster = data?.caster;
 
+
+    // Apply what effects you can apply yourself
     const actors = new Set();
     for (const token of owned) if (token.actor) actors.add(token.actor);
     for (const actor of actors) await _applyEffects(actor, effect, {effectData: data?.effectData, concentration: data?.concentration});
 
+    // Ask the GM client to apply the rest
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
 
     await game.socket.emit(socketID, { 
