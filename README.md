@@ -42,6 +42,17 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    *                                            that cast the spell that requires concentration, 
    *                                            if any.
    */
+  async function applyEffect(
+    effect, 
+    targets, 
+    data = { 
+      effectData: null, 
+      concentration: null, 
+      caster: null 
+    }
+  )
+
+  /* in use...*/
   effectiv.applyEffect(
     effect, 
     targets, 
@@ -63,6 +74,9 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    * @param {array} opts   Object of options (which may inlude arrays); see above.
    * @param {string} id    Uuid of the target.
    */
+  async function applyDamage(damage=[], opts={}, id)
+
+  /* in use...*/
   effectiv.applyDamage(damage=[], opts={}, id)
 ```
 A helper function to allow users to apply damage.
