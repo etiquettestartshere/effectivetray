@@ -51,7 +51,8 @@ Allows users to use the damage tray for selected tokens that they own, and for t
       caster: null 
     }
   )
-
+```
+```js
   /* in use...*/
   effectiv.applyEffect(
     effect, 
@@ -75,6 +76,8 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    * @param {string} id    Uuid of the target.
    */
   async function applyDamage(damage=[], opts={}, id)
+```
+```js  
 
   /* in use...*/
   effectiv.applyDamage(damage=[], opts={}, id)
