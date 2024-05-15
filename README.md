@@ -19,6 +19,11 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Scroll on Expand**: Scroll chat to bottom when expanding a tray that is at the bottom (experimental, on by default).
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
+
+## API
+- `effectiv.applyEffect(effect, targets, data = {effectData: null, concentration: null, caster: null})` A helper function to allow users to apply effects.
+- `effectiv.applyDamage(damage=[], opts={}, id)` A helper function to allow users to apply damage.
+See scripts\API.mjs for more information. These helpers are mostly untested and being included before documentation is complete.
 ___
 ###### **Technical Details**
 
