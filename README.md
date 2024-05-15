@@ -39,8 +39,8 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    *                                            effect this effect is dependent on, 
    *                                            if any.
    * @param {string|Actor5e|void} caster        The Uuid or Actor5e document of the actor 
-   *                                            that cast the spell that requires concentration, 
-   *                                            if any.
+   *                                            that cast the spell that requires 
+   *                                            concentration, if any.
    */
   async function applyEffect(
     effect, 
