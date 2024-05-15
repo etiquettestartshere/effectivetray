@@ -56,7 +56,8 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 ```js
   /**
    * ... Much documentation cut here...see scripts/api.mjs or better yet, dnd5e...
-   * Helper function to allow for macros or other applications make a socket request to apply damage.
+   * Helper function to allow for macros or other applications to 
+   * make a socket request to apply damage.
    * @param {array} damage Array of damage objects; see above.
    * @param {array} opts Object of options (which may inlude arrays); see above.
    * @param {string} id Uuid of the target.
