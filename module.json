@@ -1,19 +1,26 @@
 {
   "id": "effectivetray",
   "title": "Effective Tray",
-  "version": "1.1.17",
+  "version": "1.1.18",
   "compatibility": {
     "minimum": "11",
     "verified": "11"
   },
-  "esmodules": ["scripts/setup.mjs"],
-  "styles": ["styles/effectivetray.css"],
+  "esmodules": [
+    "scripts/setup.mjs"
+  ],
+  "styles": [
+    "styles/effectivetray.css"
+  ],
   "relationships": {
     "systems": [
       {
         "id": "dnd5e",
         "type": "system",
-        "compatibility": {"minimum": "3.1.0", "maximum": "3.1.9999"}
+        "compatibility": {
+          "minimum": "3.1.0",
+          "maximum": "3.1.9999"
+        }
       }
     ]
   },
@@ -25,11 +32,22 @@
       "flags": {}
     }
   ],
-  "flags": {"hotReload": {"extensions": ["css", "json"], "paths": ["styles/effectivetray.css", "lang"]}},
+  "flags": {
+    "hotReload": {
+      "extensions": [
+        "css",
+        "json"
+      ],
+      "paths": [
+        "styles/effectivetray.css",
+        "lang"
+      ]
+    }
+  },
   "socket": true,
   "url": "https://github.com/etiquettestartshere/effectivetray",
   "manifest": "https://github.com/etiquettestartshere/effectivetray/releases/latest/download/module.json",
-  "download": "https://github.com/etiquettestartshere/effectivetray/releases/latest/download/module.zip",
+  "download": "https://github.com/etiquettestartshere/effectivetray/releases/download/v1.1.17/module.zip",
   "authors": [
     {
       "name": "alakshana",

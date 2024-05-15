@@ -81,7 +81,7 @@ export class effectiveTray {
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokensLegacy" :
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokens"
     ) : "DND5E.EffectsApplyTokens";
-    const lvl = message.flags?.dnd5e?.use?.spellLevel;
+    const effectData = { "flags.dnd5e.spellLevel": message.flags?.dnd5e?.use?.spellLevel};
     for (const effect of effects) {
       const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
       const caster = actor.uuid;
@@ -107,14 +107,14 @@ export class effectiveTray {
           const actors = new Set();
           for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
-            await _applyEffects(actor, effect, lvl, concentration);
+            await _applyEffects(actor, effect, {effectData, concentration});
             if (!game.settings.get(MODULE, "dontCloseOnPress")) {
               tray.classList.add("collapsed");
               tray.classList.remove("et-uncollapsed");
             };  
           };
         } else {
-          _effectApplicationHandler(tray, effect, lvl, concentration, caster);
+          _effectApplicationHandler(tray, effect, {effectData, concentration, caster});
         };
       });
 
@@ -123,7 +123,7 @@ export class effectiveTray {
         tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function(event) {
           event.stopPropagation();
           event.preventDefault();
-          _effectApplicationHandler(tray, effect, lvl, concentration, caster);
+          _effectApplicationHandler(tray, effect, {effectData, concentration, caster});
         });
       };
     };
@@ -355,10 +355,11 @@ export class effectiveSocket {
 async function _effectSocket(request) {
   if (game.user !== game.users.activeGM) return;
   const targets = request.data.targets;
-  const effect = await fromUuid(request.data.origin);
+  const origin = request.data.origin;
+  const effect = foundry.utils.getType(origin) === "string" ? await fromUuid(origin) : origin;
   const c = await fromUuid(request.data.caster);
   const concentration = c?.effects?.get(request.data.con);
-  const lvl = request.data.lvl;
+  const effectData = request.data.effectData;
   const actors = new Set();
   for (const target of targets) {
     const token = await fromUuid(target);
@@ -366,7 +367,7 @@ async function _effectSocket(request) {
     if (target) actors.add(targetActor);
   };
   for (const actor of actors) {
-    await _applyEffects(actor, effect, lvl, concentration);
+    await _applyEffects(actor, effect, {effectData, concentration});
   };
 };
 
@@ -402,24 +403,38 @@ async function _damageSocket(request) {
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  * @param {string} caster The Uuid of the actor which originally cast the spell requiring concentration.
  */
-async function _effectApplicationHandler(tray, effect, lvl, concentration, caster) {
+async function _effectApplicationHandler(tray, effect, {effectData, concentration, caster}) {
   if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
-  const targets = Array.from(game.user.targets).map(i => i.document.uuid)
   if (game.user.isGM) {
     const actors = new Set();
     for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
     for (const actor of actors) {
-      await _applyEffects(actor, effect, lvl, concentration);
+      await _applyEffects(actor, effect, {effectData, concentration});
       if (!game.settings.get(MODULE, "dontCloseOnPress")) {
         tray.classList.add("collapsed");
         tray.classList.remove("et-uncollapsed");
       };
     };
   } else {
+    const owned = Array.from(game.user.targets).filter(t => t.document?.isOwner);
+    const actors = new Set();
+    for (const token of owned) if (token.actor) actors.add(token.actor);
+    for (const actor of actors) {
+      await _applyEffects(actor, effect, {effectData, concentration});
+      if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+        tray.classList.add("collapsed");
+        tray.classList.remove("et-uncollapsed");
+      };
+    };
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
+    const targets = Array.from(game.user.targets).reduce((acc, t) => {
+      if (!t.document?.isOwner) acc.push(t.document?.uuid);
+      return acc;
+    }, []);
+    if (!targets.length) return;
     const origin = effect.uuid;
     const con = concentration?.id;
-    await game.socket.emit(socketID, { type: "effect", data: { origin, targets, lvl, con, caster } });
+    await game.socket.emit(socketID, { type: "effect", data: { origin, targets, effectData, con, caster } });
     if (!game.settings.get(MODULE, "dontCloseOnPress")) {
       tray.classList.add("collapsed");
       tray.classList.remove("et-uncollapsed");
@@ -434,38 +449,32 @@ async function _effectApplicationHandler(tray, effect, lvl, concentration, caste
  * @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  */
-async function _applyEffects(actor, effect, lvl, concentration) {
+export async function _applyEffects(actor, effect, {effectData, concentration}) {
+
+  // Enable an existing effect on the target if it originated from this effect
   const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
   const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
     actor.effects.find(e => e.origin === effect.uuid) :
     actor.effects.find(e => e.origin === origin.uuid);
-  let flags;
-  if (game.settings.get(MODULE, "flagLevel") && effect?.parent?.type === "spell") {
-    flags = foundry.utils.deepClone(effect.flags);
-    foundry.utils.mergeObject(flags, {
-      dnd5e: {
-        spellLevel: lvl
-      }
-    });
-  } else flags = effect.flags;
   if (existingEffect) {
     if (!game.settings.get(MODULE, "deleteInstead")) {
-      return existingEffect.update({
+      return existingEffect.update(foundry.utils.mergeObject({
         ...effect.constructor.getInitialDuration(),
-        disabled: false,
-        flags: flags
-      });
+        disabled: false
+      }, effectData));
+
+    // Or delete it instead
     } else existingEffect.delete();
-    if ( !game.user.isGM && concentration && !concentration.actor?.isOwner ) {
-      throw new Error(game.i18n.localize("DND5E.EffectApplyWarningConcentration"));
-    }
   } else {
-    const effectData = foundry.utils.mergeObject(effect.toObject(), {
+
+    // Otherwise, create a new effect on the target
+    effect instanceof ActiveEffect ? effect = effect.toObject() : effect;
+    effectData = foundry.utils.mergeObject({
+      ...effect,
       disabled: false,
       transfer: false,
-      origin: origin.uuid,
-      flags: flags
-    });
+      origin: origin.uuid
+    }, effectData);
     const applied = await ActiveEffect.implementation.create(effectData, { parent: actor });
     if (concentration) await concentration.addDependent(applied);
     return applied;
