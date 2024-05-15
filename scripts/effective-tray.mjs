@@ -81,7 +81,7 @@ export class effectiveTray {
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokensLegacy" :
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokens"
     ) : "DND5E.EffectsApplyTokens";
-    const effectData = { "flags.dnd5e.spellLevel": message.flags?.dnd5e?.use?.spellLevel};
+    const effectData = { "flags.dnd5e.spellLevel": message.flags?.dnd5e?.use?.spellLevel };
     for (const effect of effects) {
       const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
       const caster = actor.uuid;
