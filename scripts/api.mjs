@@ -1,5 +1,5 @@
 import { MODULE, socketID } from "./const.mjs";
-import { _applyEffects } from "./effective-tray.mjs";
+import { _applyEffects, partitionTargets} from "./effective-tray.mjs";
 
 export class API {
 
@@ -42,23 +42,14 @@ export class API {
     let owned;
     let toTarget;
     if (targets instanceof Set) {
-      [owned, toTarget] = Array.from(targets).reduce((acc, t) => {
-        if (t.isOwner) acc[0].push(t);
-        else acc[1].push(t.document.uuid);
-        return acc;
-      }, [[], []]);
+      [owned, toTarget] = partitionTargets(Array.from(targets));
     }
     else if (foundry.utils.getType(targets) === "string") {
       const t = await fromUuid(targets);
       t.document.isOwner ? owned = t : toTarget = Array.from(t);
     }
     else if (targets.at(0) instanceof Token) {
-      [owned, toTarget] = targets.reduce((acc, t) => {
-        if (t.isOwner) acc[0].push(t);
-        else acc[1].push(t.document.uuid);
-        return acc;
-      }, [[], []]);
-
+      partitionTargets(targets);
     } 
     else {
       owned = [];

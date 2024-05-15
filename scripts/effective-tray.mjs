@@ -416,11 +416,7 @@ async function _effectApplicationHandler(tray, effect, {effectData, concentratio
       };
     };
   } else {
-    const [owned, targets] = Array.from(game.user.targets).reduce((acc, t) => {
-      if (t.isOwner) acc[0].push(t);
-      else acc[1].push(t.document.uuid);
-      return acc;
-    }, [[], []]);
+    const [owned, targets] = partitionTargets(game.user.targets);
     const actors = new Set();
     for (const token of owned) if (token.actor) actors.add(token.actor);
     for (const actor of actors) {
@@ -506,4 +502,17 @@ async function _scroll(mid) {
     await new Promise(r => setTimeout(r, 256));
     window.ui.sidebar.popouts.chat.scrollBottom();
   };
+};
+
+/**
+ * Sort tokens into owned and unowned categories.
+ * @param {set|array} targets The set or array of tokens to be sorted.
+ */
+export function partitionTargets(targets) {
+  const result = targets.reduce((acc, t) => {
+    if (t.isOwner) acc[0].push(t);
+    else acc[1].push(t.document.uuid);
+    return acc;
+  }, [[], []]);
+  return result;
 };
