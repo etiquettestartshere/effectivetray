@@ -42,7 +42,8 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    *                                            that cast the spell that requires concentration, 
    *                                            if any.
    */
-  effectiv.applyEffect(effect, 
+  effectiv.applyEffect(
+    effect, 
     targets, 
     data = { 
       effectData: null, 
