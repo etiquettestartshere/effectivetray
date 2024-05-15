@@ -101,29 +101,29 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async() => {
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async () => {
         const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
         if (!mode || mode === "selected") {
           const actors = new Set();
           for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
           for (const actor of actors) {
-            await _applyEffects(actor, effect, {effectData, concentration});
+            await _applyEffects(actor, effect, { effectData, concentration });
             if (!game.settings.get(MODULE, "dontCloseOnPress")) {
               tray.classList.add("collapsed");
               tray.classList.remove("et-uncollapsed");
-            };  
+            };
           };
         } else {
-          _effectApplicationHandler(tray, effect, {effectData, concentration, caster});
+          _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
         };
       });
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function(event) {
+        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function (event) {
           event.stopPropagation();
           event.preventDefault();
-          _effectApplicationHandler(tray, effect, {effectData, concentration, caster});
+          _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
         });
       };
     };
@@ -141,7 +141,7 @@ export class effectiveTray {
       event.preventDefault();
       if (html.querySelector(".et-uncollapsed")) {
         tray.classList.remove("et-uncollapsed");
-      };  
+      };
       if (!html.querySelector(".effects-tray.collapsed")) {
         tray.classList.add("collapsed");
       } else if (html.querySelector(".effects-tray.collapsed")) tray.classList.remove("collapsed");
@@ -177,7 +177,7 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', async() => {
+        button.addEventListener('click', async () => {
           if (!tray.querySelector(".et-uncollapsed")) {
             await tray.classList.add("et-uncollapsed");
             await new Promise(r => setTimeout(r, 108));
@@ -367,7 +367,7 @@ async function _effectSocket(request) {
     if (target) actors.add(targetActor);
   };
   for (const actor of actors) {
-    await _applyEffects(actor, effect, {effectData, concentration});
+    await _applyEffects(actor, effect, { effectData, concentration });
   };
 };
 
@@ -403,13 +403,13 @@ async function _damageSocket(request) {
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  * @param {string} caster The Uuid of the actor which originally cast the spell requiring concentration.
  */
-async function _effectApplicationHandler(tray, effect, {effectData, concentration, caster}) {
+async function _effectApplicationHandler(tray, effect, { effectData, concentration, caster }) {
   if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
   if (game.user.isGM) {
     const actors = new Set();
     for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
     for (const actor of actors) {
-      await _applyEffects(actor, effect, {effectData, concentration});
+      await _applyEffects(actor, effect, { effectData, concentration });
       if (!game.settings.get(MODULE, "dontCloseOnPress")) {
         tray.classList.add("collapsed");
         tray.classList.remove("et-uncollapsed");
@@ -420,7 +420,7 @@ async function _effectApplicationHandler(tray, effect, {effectData, concentratio
     const actors = new Set();
     for (const token of owned) if (token.actor) actors.add(token.actor);
     for (const actor of actors) {
-      await _applyEffects(actor, effect, {effectData, concentration});
+      await _applyEffects(actor, effect, { effectData, concentration });
       if (!game.settings.get(MODULE, "dontCloseOnPress")) {
         tray.classList.add("collapsed");
         tray.classList.remove("et-uncollapsed");
@@ -445,7 +445,7 @@ async function _effectApplicationHandler(tray, effect, {effectData, concentratio
  * @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  */
-export async function _applyEffects(actor, effect, {effectData, concentration}) {
+export async function _applyEffects(actor, effect, { effectData, concentration }) {
 
   // Enable an existing effect on the target if it originated from this effect
   const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
@@ -459,7 +459,7 @@ export async function _applyEffects(actor, effect, {effectData, concentration}) 
         disabled: false
       }, effectData));
 
-    // Or delete it instead
+      // Or delete it instead
     } else existingEffect.delete();
   } else {
 
