@@ -416,7 +416,11 @@ async function _effectApplicationHandler(tray, effect, {effectData, concentratio
       };
     };
   } else {
-    const owned = Array.from(game.user.targets).filter(t => t.document?.isOwner);
+    const [owned, targets] = Array.from(game.user.targets).reduce((acc, t) => {
+      if (t.isOwner) acc[0].push(t);
+      else acc[1].push(t.document.uuid);
+      return acc;
+    }, [[], []]);
     const actors = new Set();
     for (const token of owned) if (token.actor) actors.add(token.actor);
     for (const actor of actors) {
@@ -426,12 +430,8 @@ async function _effectApplicationHandler(tray, effect, {effectData, concentratio
         tray.classList.remove("et-uncollapsed");
       };
     };
-    if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
-    const targets = Array.from(game.user.targets).reduce((acc, t) => {
-      if (!t.document?.isOwner) acc.push(t.document?.uuid);
-      return acc;
-    }, []);
     if (!targets.length) return;
+    if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
     const origin = effect.uuid;
     const con = concentration?.id;
     await game.socket.emit(socketID, { type: "effect", data: { origin, targets, effectData, con, caster } });

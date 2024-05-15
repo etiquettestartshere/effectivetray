@@ -27,34 +27,42 @@ export class API {
     // Effect handling
     let toApply;
     const effectType = foundry.utils.getType(effect);
-    if (effect instanceof ActiveEffect) toApply = effect.uuid;
-    else if (effectType === "string" || effectType === "Object") toApply = effect;
+    if (effect instanceof ActiveEffect) {
+      toApply = effect.uuid;
+    }  
+    else if (effectType === "string") {
+      toApply = effect;
+      effect = await fromUuid(effect);
+    } 
+    else if (effectType === "Object") {
+      toApply = effect;
+    }
 
     // Target handling
-    let toTarget;
     let owned;
+    let toTarget;
     if (targets instanceof Set) {
-      owned = Array.from(targets).filter(t => t.document.isOwner);
-      toTarget = Array.from(targets).reduce((acc, t) => {
-        if (!t.document?.isOwner) acc.push(t.document?.uuid);
+      [owned, toTarget] = Array.from(targets).reduce((acc, t) => {
+        if (t.isOwner) acc[0].push(t);
+        else acc[1].push(t.document.uuid);
         return acc;
-      }, []);
-    }  
+      }, [[], []]);
+    }
     else if (foundry.utils.getType(targets) === "string") {
       const t = await fromUuid(targets);
-      t.document.isOwner? owned = t : toTarget = Array.from(t);
-    }  
+      t.document.isOwner ? owned = t : toTarget = Array.from(t);
+    }
     else if (targets.at(0) instanceof Token) {
-      owned = targets.filter(t => t.document.isOwner);
-      toTarget = targets.reduce((acc, t) => {
-        if (!t.document?.isOwner) acc.push(t.document?.uuid);
+      [owned, toTarget] = targets.reduce((acc, t) => {
+        if (t.isOwner) acc[0].push(t);
+        else acc[1].push(t.document.uuid);
         return acc;
-      }, []);
-      
-    }  
+      }, [[], []]);
+
+    } 
     else {
-      toTarget = [];
       owned = [];
+      toTarget = [];
       for (const target of targets) {
         const t = await fromUuid(target);
         if (t.isOwned) owned.push(t);
