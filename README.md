@@ -28,19 +28,19 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    * @param {string|object|ActiveEffect} effect The effect to apply. 
    *                                            Can handle Uuid, effect data as an object, 
    *                                            or an ActiveEffect proper.
-   * @param {set|array|string} targets Targeted tokens. 
-   *                                   Handles `game.user.targets`, 
-   *                                   or any generic array of token placeables.
-   * @param {number|void} effectData A generic data object, which typically handles
-   *                                 the level the originating spell was cast at, 
-   *                                 if it originated from a spell, if any. 
-   *                                 Use flags like { "flags.dnd5e.spellLevel": 1 }.
-   * @param {string|void} concentration The ID (not Uuid) of the concentration 
-   *                                    effect this effect is dependent on, 
-   *                                    if any.
-   * @param {string|Actor5e|void} caster The Uuid or Actor5e document of the actor 
-   *                                     that cast the spell that requires concentration, 
-   *                                     if any.
+   * @param {set|array|string} targets          Targeted tokens. 
+   *                                            Handles `game.user.targets`, 
+   *                                            or any generic array of token placeables.
+   * @param {number|void} effectData            A generic data object, which typically handles
+   *                                            the level the originating spell was cast at, 
+   *                                            if it originated from a spell, if any. 
+   *                                            Use flags like { "flags.dnd5e.spellLevel": 1 }.
+   * @param {string|void} concentration         The ID (not Uuid) of the concentration 
+   *                                            effect this effect is dependent on, 
+   *                                            if any.
+   * @param {string|Actor5e|void} caster        The Uuid or Actor5e document of the actor 
+   *                                            that cast the spell that requires concentration, 
+   *                                            if any.
    */
   effectiv.applyEffect(effect, 
     targets, 
@@ -59,8 +59,8 @@ Allows users to use the damage tray for selected tokens that they own, and for t
    * Helper function to allow for macros or other applications to 
    * make a socket request to apply damage.
    * @param {array} damage Array of damage objects; see above.
-   * @param {array} opts Object of options (which may inlude arrays); see above.
-   * @param {string} id Uuid of the target.
+   * @param {array} opts   Object of options (which may inlude arrays); see above.
+   * @param {string} id    Uuid of the target.
    */
   effectiv.applyDamage(damage=[], opts={}, id)
 ```
