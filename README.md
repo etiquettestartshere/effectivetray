@@ -21,14 +21,14 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
 
 ## API
-- ```js
+```js
   effectiv.applyEffect(effect, targets, data = {effectData: null, concentration: null, caster: null})
-  ``` 
-  A helper function to allow users to apply effects.
-- ````js 
+```
+ A helper function to allow users to apply effects.
+
+```js 
   effectiv.applyDamage(damage=[], opts={}, id)
-  ```
-  
+```
 A helper function to allow users to apply damage.
 See scripts/api.mjs for more information. These helpers are mostly untested and being included before documentation is complete.
 ___
