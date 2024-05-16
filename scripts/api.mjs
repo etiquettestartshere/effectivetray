@@ -19,11 +19,11 @@ export class API {
    * Helper function to allow for macros or other applications to apply effects to owned and unowned targets.
    * @param {string|object|ActiveEffect5e} effect            The effect to apply.
    * @param {Set<Token5e>|Token5e[]|string[]|string} targets Targeted tokens.
-   * @param {object} {}
-   * @param {object} effectData                              A generic data object, which typically handles the level the originating spell was cast at, 
+   * @param {object} [options]
+   * @param {object} [options.effectData]                    A generic data object, which typically handles the level the originating spell was cast at, 
    *                                                         if it originated from a spell, if any. Use flags like { "flags.dnd5e.spellLevel": 1 }.
-   * @param {string} concentration                           The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
-   * @param {string|Actor5e} caster                          The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
+   * @param {string} [options.concentration]                 The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
+   * @param {string|Actor5e} [options.caster]                The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
    */
   static async applyEffect(effect, targets, {effectData = null, concentration = null, caster = null} = {}) {
 
