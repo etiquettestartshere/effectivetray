@@ -146,7 +146,7 @@ export class API {
    * @param {array} opts   Object of options (which may inlude arrays); see above.
    * @param {string} id    Uuid of the target.
    */
-  static async applyDamage(damage=[], opts={}, id) {
+  static async applyDamage(damage = [], opts = {}, id) {
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
     await game.socket.emit(socketID, { type: "damage", data: { id, opts, damage } });
   };

@@ -49,11 +49,9 @@ async function applyEffect(
 effectiv.applyEffect(
   effect, 
   targets, 
-  data = { 
-    effectData: null, 
-    concentration: null, 
-    caster: null 
-  }
+  effect, 
+  targets, 
+  { effectData: null, concentration: null, caster: null } = {}
 )
 ```
 
@@ -65,11 +63,11 @@ effectiv.applyEffect(
  * @param {array} opts   Object of options (which may inlude arrays); see above.
  * @param {string} id    Uuid of the target.
  */
-async function applyDamage(damage=[], opts={}, id)
+async function applyDamage(damage = [], opts = {}, id)
 ```
 ```js  
 /* in use...*/
-effectiv.applyDamage(damage=[], opts={}, id)
+effectiv.applyDamage(damage = [], opts = {}, id)
 ```
 
 `partitionTargets`, a function similar to foundry's `Array#partition` but specifically designed to handle `game.user.targets`, a set, or an array of tokens. It sorts them into two arrays, the first array containing tokens that the user owns, and the second array containing those token's `document.uuid`s. This can be useful for determining what information needs to be sent over sockets. I have no idea why anyone would use this function, but here it is.
