@@ -21,6 +21,12 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
 
 ## API
+Now includes two helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect` and `effectiv.applyDamage`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
+
+`applyEffect`, a helper function to allow users to apply effects. It allows users to apply effects via macro (or other module), and can take a variety of types of data when doing so, allowing effect data to be passed as the full ActiveEffect document, an effect Uuid, or an object (note that passing it as an object will not interact with refreshing duration or deleting effects of same origin, as determined by module setting, because creating an effect from an object will have its own unique origin). Similarly, this function allows target data to be passed as an array of Uuids, a single Uuid, an array of Tokens, or a Set, as `game.user.targets`.
+
+This helper also allows the use of the other things the effects tray does, primarily flagging effects with spellLevel, or any other arbitrary flags (via effectData), and making an effect dependent on a concentration effect (so it will be deleted when the concentration effect is). If concentration is used, because it passed as an ID, you must also pass the Uuid or Actor document of the actor the concentration effect is on.
+
 ```js
   /**
    * Helper function to allow for macros or other applications
@@ -64,8 +70,7 @@ Allows users to use the damage tray for selected tokens that they own, and for t
     }
   )
 ```
- A helper function to allow users to apply effects.
-
+`applyDamage`, helper function to allow users to apply damage. This function has been tested not at all and is included as a courtesy. Personally I find the way damage information must be structured to respect resistances, etc is too much of a mess to test this even a single time, but if someone really wants to do this over a socket but didn't write their own socket handler for it...here you go. Full, extensive documentation of the array that must be created is in scripts/api.mjs, copied directly from `dnd5e`, with the exception that socket transmission requires the sets to be arrays.
 ```js
   /**
    * ... Much documentation cut here...see scripts/api.mjs or better yet, dnd5e...
@@ -82,7 +87,6 @@ Allows users to use the damage tray for selected tokens that they own, and for t
   /* in use...*/
   effectiv.applyDamage(damage=[], opts={}, id)
 ```
-A helper function to allow users to apply damage.
 See scripts/api.mjs for more information. These helpers are mostly untested and being included before documentation is complete.
 ___
 ###### **Technical Details**
