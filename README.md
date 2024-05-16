@@ -28,80 +28,79 @@ Now includes three helper functions exposed in the global scope under `effectiv`
 This helper also allows the use of the other things the effects tray does, primarily flagging effects with spellLevel, or any other arbitrary flags (via effectData), and making an effect dependent on a concentration effect (so it will be deleted when the concentration effect is). If concentration is used, because it passed as an ID, you must also pass the Uuid or Actor document of the actor the concentration effect is on.
 
 ```js
-  /**
-   * Helper function to allow for macros or other applications to apply effects to owned 
-   * and unowned targets.
-   * @param {string|object|ActiveEffect} effect The effect to apply. 
-   *                                            Can handle Uuid, effect data as an object, 
-   *                                            or an ActiveEffect proper.
-   * @param {set|array|string} targets          Targeted tokens. 
-   *                                            Handles `game.user.targets`, 
-   *                                            or any generic array of token placeables.
-   * @param {number|void} effectData            A generic data object, which typically handles
-   *                                            the level the originating spell was cast at, 
-   *                                            if it originated from a spell, if any. 
-   *                                            Use flags like { "flags.dnd5e.spellLevel": 1 }.
-   * @param {string|void} concentration         The ID (not Uuid) of the concentration 
-   *                                            effect this effect is dependent on, 
-   *                                            if any.
-   * @param {string|Actor5e|void} caster        The Uuid or Actor5e document of the actor 
-   *                                            that cast the spell that requires 
-   *                                            concentration, if any.
-   */
-  async function applyEffect(
-    effect, 
-    targets, 
-    data = { 
-      effectData: null, 
-      concentration: null, 
-      caster: null 
-    }
-  )
+/**
+ * Helper function to allow for macros or other applications to apply effects to owned 
+ * and unowned targets.
+ * @param {string|object|ActiveEffect} effect The effect to apply. 
+ *                                            Can handle Uuid, effect data as an object, 
+ *                                            or an ActiveEffect proper.
+ * @param {set|array|string} targets          Targeted tokens. 
+ *                                            Handles `game.user.targets`, 
+ *                                            or any generic array of token placeables.
+ * @param {number|void} effectData            A generic data object, which typically handles
+ *                                            the level the originating spell was cast at, 
+ *                                            if it originated from a spell, if any. 
+ *                                            Use flags like { "flags.dnd5e.spellLevel": 1 }.
+ * @param {string|void} concentration         The ID (not Uuid) of the concentration 
+ *                                            effect this effect is dependent on, 
+ *                                            if any.
+ * @param {string|Actor5e|void} caster        The Uuid or Actor5e document of the actor 
+ *                                            that cast the spell that requires 
+ *                                            concentration, if any.
+ */
+async function applyEffect(
+  effect, 
+  targets, 
+  data = { 
+    effectData: null, 
+    concentration: null, 
+    caster: null 
+  }
+)
 ```
 ```js
-  /* in use...*/
-  effectiv.applyEffect(
-    effect, 
-    targets, 
-    data = { 
-      effectData: null, 
-      concentration: null, 
-      caster: null 
-    }
-  )
+/* in use...*/
+effectiv.applyEffect(
+  effect, 
+  targets, 
+  data = { 
+    effectData: null, 
+    concentration: null, 
+    caster: null 
+  }
+)
 ```
 
 `applyDamage`, helper function to allow users to apply damage. This function has been tested not at all and is included as a courtesy. Personally I find the way damage information must be structured to respect resistances, etc is too much of a mess to test this even a single time, but if someone really wants to do this over a socket but didn't write their own socket handler for it...here you go. Full, extensive documentation of the array that must be created is in scripts/api.mjs, copied directly from `dnd5e`, with the exception that socket transmission requires the sets to be arrays. Unlike `applyEffect`, this applies no damage via the requesting client, and so is basically only meant for damaging unowned targets. Users wishing to apply damage to owned targets should simply use the system's `Actor#applyDamage`.
 ```js
-  /**
-   * ... Much documentation cut here...see scripts/api.mjs or better yet, dnd5e...
-   * Helper function to allow for macros or other applications to apply damage 
-   * via socket request.
-   * @param {array} damage Array of damage objects; see above.
-   * @param {array} opts   Object of options (which may inlude arrays); see above.
-   * @param {string} id    Uuid of the target.
-   */
-  async function applyDamage(damage=[], opts={}, id)
+/**
+ * ... Much documentation cut here...see scripts/api.mjs or better yet, dnd5e...
+ * Helper function to allow for macros or other applications to apply damage 
+ * via socket request.
+ * @param {array} damage Array of damage objects; see above.
+ * @param {array} opts   Object of options (which may inlude arrays); see above.
+ * @param {string} id    Uuid of the target.
+ */
+async function applyDamage(damage=[], opts={}, id)
 ```
 ```js  
-
-  /* in use...*/
-  effectiv.applyDamage(damage=[], opts={}, id)
+/* in use...*/
+effectiv.applyDamage(damage=[], opts={}, id)
 ```
 
 `partitionTargets`, a function similar to foundry's `Array#partition` but specifically designed to handle `game.user.targets`, a set, or an array of tokens. It sorts them into two arrays, the first array containing tokens that the user owns, and the second array containing those token's `document.uuid`s. This can be useful for determining what information needs to be sent over sockets. I have no idea why anyone would use this function, but here it is.
 ```js
-  /**
-   * Sort tokens into owned and unowned categories.
-   * @param {set|array} targets The set or array of tokens to be sorted.
-   * @returns {Array}    An Array of length two whose elements are the 
-   * partitioned pieces of the original
-   */
-  function partitionTargets(targets)
+/**
+ * Sort tokens into owned and unowned categories.
+ * @param {set|array} targets The set or array of tokens to be sorted.
+ * @returns {Array}    An Array of length two whose elements are the 
+ * partitioned pieces of the original
+ */
+function partitionTargets(targets)
 ```
 ```js
-  /* in use...*/
-  effectiv.partitionTargets(targets)
+/* in use...*/
+effectiv.partitionTargets(targets)
 ```
 
 ## Hooks
@@ -109,23 +108,24 @@ Now includes two hooks, `effectiv.preApplyEffect` and `effectiv.applyEffect`. Th
 
 These hooks have not been extensively tested.
 ```js
-  /**
-   * Hook called before the effect is completed and applied.
-   * @param {Actor5e} actor                The actor to create the effect on.
-   * @param {ActiveEffect5e} effect        The effect to create.
-   * @param {object} effectData            A generic data object that contains spellLevel in a 
-   *                                       `dnd5e` scoped flag, and whatever else.
-   * @param {ActiveEffect5e} concentration The concentration effect on which `effect` 
-   *                                       is dependent, if it requires concentration.
-   */
-  Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
-
-  /**
-   * Hook called before the effect is completed and applied.
-   * Same as abvove except for effectData
-   * @param {object} effectData The packaged effect immediately before application.
-   */
-  Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+/**
+ * Hook called before the effect is completed and applied.
+ * @param {Actor5e} actor                The actor to create the effect on.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            A generic data object that contains spellLevel in a 
+ *                                       `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` 
+ *                                       is dependent, if it requires concentration.
+ */
+Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
+```
+```js
+/**
+ * Hook called before the effect is completed and applied.
+ * Same as abvove except for effectData
+ * @param {object} effectData The packaged effect immediately before application.
+ */
+Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
 ```
 ___
 ###### **Technical Details**
