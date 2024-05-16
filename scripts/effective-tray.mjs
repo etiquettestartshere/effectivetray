@@ -81,10 +81,13 @@ export class effectiveTray {
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokensLegacy" :
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokens"
     ) : "DND5E.EffectsApplyTokens";
-    const effectData = { "flags.dnd5e.spellLevel": message.flags?.dnd5e?.use?.spellLevel };
+    let spellLevel;
+    if ( message.flags?.dnd5e?.use?.spellLevel ) spellLevel = 0;
+    else spellLevel = parseInt(message.flags?.dnd5e?.use?.spellLevel) || null;
+    const effectData = { "flags.dnd5e.spellLevel": spellLevel };
+    const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
+    const caster = actor.uuid;
     for (const effect of effects) {
-      const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
-      const caster = actor.uuid;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
