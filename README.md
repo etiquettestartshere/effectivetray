@@ -29,33 +29,27 @@ This helper also allows the use of the other things the effects tray does, prima
 
 ```js
 /**
- * Helper function to allow for macros or other applications to apply effects to owned 
- * and unowned targets.
- * @param {string|object|ActiveEffect} effect The effect to apply. 
- *                                            Can handle Uuid, effect data as an object, 
- *                                            or an ActiveEffect proper.
- * @param {set|array|string} targets          Targeted tokens. 
- *                                            Handles `game.user.targets`, 
- *                                            or any generic array of token placeables.
- * @param {number|void} effectData            A generic data object, which typically handles
- *                                            the level the originating spell was cast at, 
- *                                            if it originated from a spell, if any. 
- *                                            Use flags like { "flags.dnd5e.spellLevel": 1 }.
- * @param {string|void} concentration         The ID (not Uuid) of the concentration 
- *                                            effect this effect is dependent on, 
- *                                            if any.
- * @param {string|Actor5e|void} caster        The Uuid or Actor5e document of the actor 
- *                                            that cast the spell that requires 
- *                                            concentration, if any.
+ * Helper function to allow for macros or other applications to apply 
+ * effects to owned and unowned targets.
+ * @param {string|object|ActiveEffect5e} effect The effect to apply.
+ * @param {Set<Token5e>|Token5e[]|string[]|string} targets 
+ * Targeted tokens.
+ * @param {object} {}
+ * @param {object} effectData A generic data object, which typically 
+ *                            handles the level the originating spell 
+ *                            was cast at, 
+ *                            if it originated from a spell, if any. 
+ *                            Use flags like { "flags.dnd5e.spellLevel": 1 }.
+ * @param {string} concentration The ID (not Uuid) of the concentration 
+ *                               effect this effect is dependent on, if any.
+ * @param {string|Actor5e} caster The Uuid or Actor5e document of the actor 
+ *                                that cast the spell that requires 
+ *                                concentration, if any.
  */
 async function applyEffect(
   effect, 
   targets, 
-  data = { 
-    effectData: null, 
-    concentration: null, 
-    caster: null 
-  }
+  { effectData: null, concentration: null, caster: null } = {}
 )
 ```
 ```js

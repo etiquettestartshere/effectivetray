@@ -17,14 +17,15 @@ export class API {
 
   /**
    * Helper function to allow for macros or other applications to apply effects to owned and unowned targets.
-   * @param {string|object|ActiveEffect} effect The effect to apply. Can handle Uuid, effect data as an object, or an ActiveEffect proper.
-   * @param {set|array|string} targets Targeted tokens. Handles `game.user.targets`, or any generic array of token placeables.
-   * @param {number|void} effectData A generic data object, which typically handles the level the originating spell was cast at, 
-   *                                 if it originated from a spell, if any. Use flags like { "flags.dnd5e.spellLevel": 1 }.
-   * @param {string|void} concentration The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
-   * @param {string|Actor5e|void} caster The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
+   * @param {string|object|ActiveEffect5e} effect            The effect to apply.
+   * @param {Set<Token5e>|Token5e[]|string[]|string} targets Targeted tokens.
+   * @param {object} {}
+   * @param {object} effectData                              A generic data object, which typically handles the level the originating spell was cast at, 
+   *                                                         if it originated from a spell, if any. Use flags like { "flags.dnd5e.spellLevel": 1 }.
+   * @param {string} concentration                           The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
+   * @param {string|Actor5e} caster                          The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
    */
-  static async applyEffect(effect, targets, data = {effectData: null, concentration: null, caster: null}) {
+  static async applyEffect(effect, targets, {effectData = null, concentration = null, caster = null} = {}) {
 
     // Effect handling
     let toApply;
@@ -65,14 +66,14 @@ export class API {
 
     // Caster handling
     let spellCaster;
-    if (data?.caster instanceof Actor) spellCaster = data?.caster.uuid;
-    else if (foundry.utils.getType(data?.caster) === "string") spellCaster = data?.caster;
+    if (caster instanceof Actor) spellCaster = caster?.uuid;
+    else if (foundry.utils.getType(caster) === "string") spellCaster = caster;
 
 
     // Apply what effects you can apply yourself
     const actors = new Set();
     for (const token of owned) if (token.actor) actors.add(token.actor);
-    for (const actor of actors) await _applyEffects(actor, effect, {effectData: data?.effectData, concentration: data?.concentration});
+    for (const actor of actors) await _applyEffects(actor, effect, {effectData, concentration});
 
     // Ask the GM client to apply the rest
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
@@ -82,8 +83,8 @@ export class API {
       data: { 
         origin: toApply,
         targets: toTarget,
-        effectData: data?.effectData,
-        con: data?.concentration,
+        effectData: effectData,
+        con: concentration,
         caster: spellCaster
       }
     });
