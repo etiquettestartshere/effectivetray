@@ -21,7 +21,7 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
 
 ## API
-Now includes two helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect` and `effectiv.applyDamage`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
+Now includes three helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect`, `effectiv.applyDamage` and `effective.partitionTargets`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
 
 `applyEffect`, a helper function to allow users to apply effects. It allows users to apply effects via macro (or other module), and can take a variety of types of data when doing so, allowing effect data to be passed as the full ActiveEffect document, an effect Uuid, or an object (note that passing it as an object will not interact with refreshing duration or deleting effects of same origin, as determined by module setting, because creating an effect from an object will have its own unique origin). Similarly, this function allows target data to be passed as an array of Uuids, a single Uuid, an array of Tokens, or a Set, as `game.user.targets`.
 
@@ -70,6 +70,7 @@ This helper also allows the use of the other things the effects tray does, prima
     }
   )
 ```
+
 `applyDamage`, helper function to allow users to apply damage. This function has been tested not at all and is included as a courtesy. Personally I find the way damage information must be structured to respect resistances, etc is too much of a mess to test this even a single time, but if someone really wants to do this over a socket but didn't write their own socket handler for it...here you go. Full, extensive documentation of the array that must be created is in scripts/api.mjs, copied directly from `dnd5e`, with the exception that socket transmission requires the sets to be arrays. Unlike `applyEffect`, this applies no damage via the requesting client, and so is basically only meant for damaging unowned targets. Users wishing to apply damage to owned targets should simply use the system's `Actor#applyDamage`.
 ```js
   /**
@@ -87,6 +88,21 @@ This helper also allows the use of the other things the effects tray does, prima
   /* in use...*/
   effectiv.applyDamage(damage=[], opts={}, id)
 ```
+
+`partitionTargets`, a function similar to foundry's `Array#partition` but specifically designed to handle `game.user.targets`, a set, or an array of tokens. It sorts them into two arrays, the first array containing tokens that the user owns, and the second array containing those token's `document.uuid`s. This can be useful for determining what information needs to be sent over sockets. I have no idea why anyone would use this function, but here it is.
+```js
+/**
+ * Sort tokens into owned and unowned categories.
+ * @param {set|array} targets The set or array of tokens to be sorted.
+ * @returns {Array}    An Array of length two whose elements are the 
+ * partitioned pieces of the original
+ */
+function partitionTargets(targets)
+```
+```js
+  /* in use...*/
+  effective.partitionTargets(targets)
+```  
 See scripts/api.mjs for more information. These helpers are mostly untested and being included before documentation is complete.
 ___
 ###### **Technical Details**

@@ -6,7 +6,8 @@ export class API {
   static init() {
     globalThis.effectiv = {
       applyEffect: API.applyEffect,
-      applyDamage: API.applyDamage
+      applyDamage: API.applyDamage,
+      partitionTargets: partitionTargets
     };
   };
 
@@ -15,7 +16,7 @@ export class API {
   /* -------------------------------------------- */
 
   /**
-   * Helper function to allow for macros or other applications to make a socket request to apply damage.
+   * Helper function to allow for macros or other applications to apply effects to owned and unowned targets.
    * @param {string|object|ActiveEffect} effect The effect to apply. Can handle Uuid, effect data as an object, or an ActiveEffect proper.
    * @param {set|array|string} targets Targeted tokens. Handles `game.user.targets`, or any generic array of token placeables.
    * @param {number|void} effectData A generic data object, which typically handles the level the originating spell was cast at, 
@@ -139,8 +140,7 @@ export class API {
    */
 
   /**
-   * Helper function to allow for macros or other applications to 
-   * make a socket request to apply damage.
+   * Helper function to allow for macros or other applications to apply damage via socket request.
    * @param {array} damage Array of damage objects; see above.
    * @param {array} opts Object of options (which may inlude arrays); see above.
    * @param {string} id Uuid of the target.

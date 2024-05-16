@@ -510,6 +510,7 @@ async function _scroll(mid) {
 /**
  * Sort tokens into owned and unowned categories.
  * @param {set|array} targets The set or array of tokens to be sorted.
+ * @returns {Array} An Array of length two whose elements are the partitioned pieces of the original
  */
 export function partitionTargets(targets) {
   const result = targets.reduce((acc, t) => {
