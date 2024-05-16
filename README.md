@@ -20,6 +20,28 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
 
+## Hooks
+Now includes two hooks, `effectiv.preApplyEffect` and `effectiv.applyEffect`. The former allows the data to be modified and explicitly returning `false` will prevent the effect from being applied. The later passes the same (modified in the case of effectData), information in its final state upon application.
+```js
+/**
+ * Hook called before the effect is completed and applied.
+ * @param {Actor5e} actor                The actor to create the effect on.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            A generic data object that contains spellLevel in a 
+ *                                       `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` 
+ *                                       is dependent, if it requires concentration.
+ */
+ Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
+
+/**
+ * Hook called before the effect is completed and applied.
+ * Same as abvove except for effectData
+ * @param {object} effectData The packaged effect immediately before application.
+ */
+ Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+```
+
 ## API
 Now includes three helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect`, `effectiv.applyDamage` and `effective.partitionTargets`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
 

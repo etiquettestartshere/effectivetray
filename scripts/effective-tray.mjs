@@ -109,12 +109,9 @@ export class effectiveTray {
         if (!mode || mode === "selected") {
           const actors = new Set();
           for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
+          _checkTray(tray);
           for (const actor of actors) {
             await _applyEffects(actor, effect, { effectData, concentration });
-            if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-              tray.classList.add("collapsed");
-              tray.classList.remove("et-uncollapsed");
-            };
           };
         } else {
           _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
@@ -214,7 +211,7 @@ export class effectiveTray {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const mid = message.id;
-    await tray.classList.add("et-uncollapsed");
+    if (game.settings.get(MODULE, "dontCloseOnPress")) tray.classList.add("et-uncollapsed");
     await new Promise(r => setTimeout(r, 108));
     await tray.classList.remove("collapsed");
     if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
@@ -411,33 +408,23 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
   if (game.user.isGM) {
     const actors = new Set();
     for (const token of game.user.targets) if (token.actor) actors.add(token.actor);
+    _checkTray(tray);
     for (const actor of actors) {
       await _applyEffects(actor, effect, { effectData, concentration });
-      if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-        tray.classList.add("collapsed");
-        tray.classList.remove("et-uncollapsed");
-      };
     };
   } else {
     const [owned, targets] = partitionTargets(game.user.targets);
     const actors = new Set();
     for (const token of owned) if (token.actor) actors.add(token.actor);
+    _checkTray(tray);
     for (const actor of actors) {
       await _applyEffects(actor, effect, { effectData, concentration });
-      if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-        tray.classList.add("collapsed");
-        tray.classList.remove("et-uncollapsed");
-      };
     };
     if (!targets.length) return;
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
     const origin = effect.uuid;
     const con = concentration?.id;
     await game.socket.emit(socketID, { type: "effect", data: { origin, targets, effectData, con, caster } });
-    if (!game.settings.get(MODULE, "dontCloseOnPress")) {
-      tray.classList.add("collapsed");
-      tray.classList.remove("et-uncollapsed");
-    };
   };
 };
 
@@ -445,16 +432,21 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
  * Apply effect, or refresh its duration (and level) if it exists
  * @param {Actor5e} actor The actor to create the effect on.
  * @param {ActiveEffect5e} effect The effect to create.
- * @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
+ * @param {object} effectData A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  */
 export async function _applyEffects(actor, effect, { effectData, concentration }) {
+
+  // Call the pre effect hook; returning `false` will terminate the function
+  const preCallback = Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
+  if (!preCallback) return;
 
   // Enable an existing effect on the target if it originated from this effect
   const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
   const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
     actor.effects.find(e => e.origin === effect.uuid) :
     actor.effects.find(e => e.origin === origin.uuid);
+
   if (existingEffect) {
     if (!game.settings.get(MODULE, "deleteInstead")) {
       return existingEffect.update(foundry.utils.mergeObject({
@@ -476,6 +468,10 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
     }, effectData);
     const applied = await ActiveEffect.implementation.create(effectData, { parent: actor });
     if (concentration) await concentration.addDependent(applied);
+
+    // Call the effect hook
+    Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+
     return applied;
   };
 };
@@ -519,4 +515,15 @@ export function partitionTargets(targets) {
     return acc;
   }, [[], []]);
   return result;
+};
+
+/**
+ * Sort tokens into owned and unowned categories.
+ * @param {HTMLElement} tray The tray to be collapsed or not collapsed
+ */
+function _checkTray(tray) {
+  if (!game.settings.get(MODULE, "dontCloseOnPress")) {
+    tray.classList.add("collapsed");
+    tray.classList.remove("et-uncollapsed");
+  };
 };
