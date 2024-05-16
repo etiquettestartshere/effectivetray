@@ -91,13 +91,13 @@ This helper also allows the use of the other things the effects tray does, prima
 
 `partitionTargets`, a function similar to foundry's `Array#partition` but specifically designed to handle `game.user.targets`, a set, or an array of tokens. It sorts them into two arrays, the first array containing tokens that the user owns, and the second array containing those token's `document.uuid`s. This can be useful for determining what information needs to be sent over sockets. I have no idea why anyone would use this function, but here it is.
 ```js
-/**
- * Sort tokens into owned and unowned categories.
- * @param {set|array} targets The set or array of tokens to be sorted.
- * @returns {Array}    An Array of length two whose elements are the 
- * partitioned pieces of the original
- */
-function partitionTargets(targets)
+  /**
+   * Sort tokens into owned and unowned categories.
+   * @param {set|array} targets The set or array of tokens to be sorted.
+   * @returns {Array}    An Array of length two whose elements are the 
+   * partitioned pieces of the original
+   */
+  function partitionTargets(targets)
 ```
 ```js
   /* in use...*/
@@ -109,23 +109,23 @@ Now includes two hooks, `effectiv.preApplyEffect` and `effectiv.applyEffect`. Th
 
 These hooks have not been extensively tested.
 ```js
-/**
- * Hook called before the effect is completed and applied.
- * @param {Actor5e} actor                The actor to create the effect on.
- * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} effectData            A generic data object that contains spellLevel in a 
- *                                       `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} concentration The concentration effect on which `effect` 
- *                                       is dependent, if it requires concentration.
- */
- Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
+  /**
+   * Hook called before the effect is completed and applied.
+   * @param {Actor5e} actor                The actor to create the effect on.
+   * @param {ActiveEffect5e} effect        The effect to create.
+   * @param {object} effectData            A generic data object that contains spellLevel in a 
+   *                                       `dnd5e` scoped flag, and whatever else.
+   * @param {ActiveEffect5e} concentration The concentration effect on which `effect` 
+   *                                       is dependent, if it requires concentration.
+   */
+  Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
 
-/**
- * Hook called before the effect is completed and applied.
- * Same as abvove except for effectData
- * @param {object} effectData The packaged effect immediately before application.
- */
- Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+  /**
+   * Hook called before the effect is completed and applied.
+   * Same as abvove except for effectData
+   * @param {object} effectData The packaged effect immediately before application.
+   */
+  Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
 ```
 ___
 ###### **Technical Details**
