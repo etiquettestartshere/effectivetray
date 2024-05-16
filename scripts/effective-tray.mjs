@@ -45,7 +45,7 @@ export class effectiveTray {
   /**
    * Make the effects tray effective
    * @param {ChatMessage5e} message The message on which the tray resides.
-   * @param {HTMLElement} html HTML contents of the message.
+   * @param {HTMLElement} html      HTML contents of the message.
    * Methods lacking documentation below share these parameters.
    */
   static async _effectTray(message, html) {
@@ -246,7 +246,7 @@ export class effectiveDamage {
   /**
    * Make the damage tray effective
    * @param {ChatMessage5e} message The message on which the tray resides.
-   * @param {HTMLElement} html HTML contents of the message.
+   * @param {HTMLElement} html      HTML contents of the message.
    * Methods lacking documentation below share these parameters.
    */
   static _damageTray(message, html) {
@@ -397,11 +397,11 @@ async function _damageSocket(request) {
 
 /**
  * Handle applying effects to targets: handle it if you can handle it, else make a request via socket
- * @param {HTMLElement} tray HTML element that composes the collapsible tray.
- * @param {ActiveEffect5e} effect The effect to create.
- * @param {number} lvl The spellLevel of the spell the effect is on, if it is on a spell.
+ * @param {HTMLElement} tray             HTML element that composes the collapsible tray.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
- * @param {string} caster The Uuid of the actor which originally cast the spell requiring concentration.
+ * @param {string} caster                The Uuid of the actor which originally cast the spell requiring concentration.
  */
 async function _effectApplicationHandler(tray, effect, { effectData, concentration, caster }) {
   if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
@@ -430,9 +430,9 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
 
 /**
  * Apply effect, or refresh its duration (and level) if it exists
- * @param {Actor5e} actor The actor to create the effect on.
- * @param {ActiveEffect5e} effect The effect to create.
- * @param {object} effectData A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {Actor5e} actor                The actor to create the effect on.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
  * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  */
 export async function _applyEffects(actor, effect, { effectData, concentration }) {
@@ -478,9 +478,9 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
 
 /**
  * Apply damage
- * @param {string} id The id of the actor to apply damage to.
+ * @param {string} id      The id of the actor to apply damage to.
  * @param {object} options The options provided by the tray, primarily the multiplier.
- * @param {array} damage An array of objects with the damage type and value that also contain Sets with damage properties.
+ * @param {array} damage   An array of objects with the damage type and value that also contain Sets with damage properties.
  */
 async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
@@ -505,8 +505,8 @@ async function _scroll(mid) {
 
 /**
  * Sort tokens into owned and unowned categories.
- * @param {set|array} targets The set or array of tokens to be sorted.
- * @returns {Array} An Array of length two whose elements are the partitioned pieces of the original
+ * @param {Set|array} targets The set or array of tokens to be sorted.
+ * @returns {array}           An Array of length two whose elements are the partitioned pieces of the original
  */
 export function partitionTargets(targets) {
   const result = targets.reduce((acc, t) => {

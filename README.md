@@ -72,8 +72,8 @@ effectiv.applyDamage(damage = [], opts = {}, id)
 ```js
 /**
  * Sort tokens into owned and unowned categories.
- * @param {set|array} targets The set or array of tokens to be sorted.
- * @returns {Array}           An Array of length two, the elements of which are the partitioned pieces of the original.
+ * @param {Set|array} targets The set or array of tokens to be sorted.
+ * @returns {array}           An Array of length two, the elements of which are the partitioned pieces of the original.
  */
 function partitionTargets(targets)
 ```
