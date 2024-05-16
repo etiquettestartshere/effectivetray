@@ -101,7 +101,7 @@ function partitionTargets(targets)
 ```
 ```js
   /* in use...*/
-  effective.partitionTargets(targets)
+  effectiv.partitionTargets(targets)
 ```  
 See scripts/api.mjs for more information. These helpers are mostly untested and being included before documentation is complete.
 ___
