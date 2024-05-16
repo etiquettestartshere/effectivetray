@@ -49,8 +49,6 @@ async function applyEffect(
 effectiv.applyEffect(
   effect, 
   targets, 
-  effect, 
-  targets, 
   { effectData: null, concentration: null, caster: null } = {}
 )
 ```
