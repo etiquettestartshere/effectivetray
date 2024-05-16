@@ -62,8 +62,8 @@ effectiv.applyEffect(
 /**
  * Helper function to allow for macros or other applications to apply damage via socket request.
  * @param {array} damage Array of damage objects; see above.
- * @param {array} opts Object of options (which may inlude arrays); see above.
- * @param {string} id Uuid of the target.
+ * @param {array} opts   Object of options (which may inlude arrays); see above.
+ * @param {string} id    Uuid of the target.
  */
 async function applyDamage(damage=[], opts={}, id)
 ```
