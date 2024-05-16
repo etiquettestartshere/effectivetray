@@ -29,8 +29,8 @@ This helper also allows the use of the other things the effects tray does, prima
 
 ```js
   /**
-   * Helper function to allow for macros or other applications
-   * to make a socket request to apply damage.
+   * Helper function to allow for macros or other applications to apply effects to owned 
+   * and unowned targets.
    * @param {string|object|ActiveEffect} effect The effect to apply. 
    *                                            Can handle Uuid, effect data as an object, 
    *                                            or an ActiveEffect proper.
@@ -74,8 +74,7 @@ This helper also allows the use of the other things the effects tray does, prima
 ```js
   /**
    * ... Much documentation cut here...see scripts/api.mjs or better yet, dnd5e...
-   * Helper function to allow for macros or other applications to 
-   * make a socket request to apply damage.
+   * Helper function to allow for macros or other applications to apply damage via socket request.
    * @param {array} damage Array of damage objects; see above.
    * @param {array} opts   Object of options (which may inlude arrays); see above.
    * @param {string} id    Uuid of the target.
