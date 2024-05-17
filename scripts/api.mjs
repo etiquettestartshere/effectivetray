@@ -52,7 +52,7 @@ export class API {
       t.document.isOwner ? owned = t : toTarget = Array.from(t);
     }
     else if (targets.at(0) instanceof Token) {
-      partitionTargets(targets);
+      [owned, toTarget] = partitionTargets(targets);
     } 
     else {
       owned = [];
@@ -95,7 +95,7 @@ export class API {
   /*                                              */
   /*    below is documentation for the system's   */
   /*    applyDamage() function which this calls,  */
-  /*    with the change that all Sets are Arrays  */
+  /*    with the change that all Sets are arrays  */
   /* -------------------------------------------- */
 
   /**
