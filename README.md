@@ -99,7 +99,10 @@ Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration
 ```js
 /**
  * Hook called before the effect is completed and applied. Same as abvove except for effectData
- * @param {object} effectData The packaged effect immediately before application.
+ * @param {Actor5e} actor                The actor to create the effect on.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            The packaged effect immediately before application.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
  */
 Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
 ```
