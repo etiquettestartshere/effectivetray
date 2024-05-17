@@ -42,25 +42,33 @@ export class API {
     }
 
     // Target handling
+
+    // Handle `game.user.targets`
     let owned;
     let toTarget;
     if (targets instanceof Set) {
       [owned, toTarget] = partitionTargets(Array.from(targets));
     }
+
+    // Handle a single Uuid
     else if (foundry.utils.getType(targets) === "string") {
       const t = await fromUuid(targets);
-      t.document.isOwner ? owned = t : toTarget = Array.from(t);
+      t.document.isOwner ? owned = Array.from(t) : toTarget = Array.from(t);
     }
+
+    // Handle an array of Tokens
     else if (targets.at(0) instanceof Token) {
       [owned, toTarget] = partitionTargets(targets);
     } 
     else {
+
+      // Handle an array of Uuids
       owned = [];
       toTarget = [];
       for (const target of targets) {
         const t = await fromUuid(target);
         if (t.isOwned) owned.push(t);
-        else toTarget.push(t);
+        else toTarget.push(target);
       };
     }  
 
