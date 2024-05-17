@@ -250,7 +250,7 @@ export class effectiveDamage {
    * Methods lacking documentation below share these parameters.
    */
   static _damageTray(message, html) {
-    if (foundry.utils.getProperty(message, "flags.dnd5e.roll.type") === "damage") {
+    if (message.rolls.some(r => r instanceof CONFIG.Dice.DamageRoll)) {
       if (!game.user.isGM) {
         if (message.whisper.length && !message.whisper.includes(game.user.id)) return;
         const damageApplication = document.createElement("effective-damage-application");
@@ -363,7 +363,7 @@ async function _effectSocket(request) {
   const actors = new Set();
   for (const target of targets) {
     const token = await fromUuid(target);
-    const targetActor = token.actor;
+    const targetActor = token.actor ?? token;
     if (target) actors.add(targetActor);
   };
   for (const actor of actors) {
