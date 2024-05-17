@@ -53,7 +53,7 @@ export class API {
     // Handle a single Uuid
     else if (foundry.utils.getType(targets) === "string") {
       const t = await fromUuid(targets);
-      t.document.isOwner ? owned = Array.from(t) : toTarget = Array.from(t);
+      t.isOwner ? owned = [t] : toTarget = [t.uuid];
     }
 
     // Handle an array of Tokens
@@ -79,11 +79,14 @@ export class API {
 
 
     // Apply what effects you can apply yourself
-    const actors = new Set();
-    for (const token of owned) if (token.actor) actors.add(token.actor);
-    for (const actor of actors) await _applyEffects(actor, effect, {effectData, concentration});
+    if (!foundry.utils.isEmpty(owned)) {
+      const actors = new Set();
+      for (const token of owned) if (token.actor ?? token) actors.add(token.actor ?? token);
+      for (const actor of actors) await _applyEffects(actor, effect, {effectData, concentration});
+    };
 
     // Ask the GM client to apply the rest
+    if (foundry.utils.isEmpty(toTarget)) return;
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
 
     await game.socket.emit(socketID, { 
