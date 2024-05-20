@@ -4,14 +4,13 @@ A module for dnd5e on foundryvtt that allows the effects and damage trays to be 
 ## Effects Tray 
 Allows users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own. If using this feature (which is on by default), left click to apply effects to selected tokens that the user owns (as the system's default behavior), or right click to apply effects to tokens that the user does not own.
 ## Damage Tray
-Allows users to use the damage tray for selected tokens that they own, and for targeted tokens (either that they own, or ones they don't own with a setting) User ability to use the damage tray is on by default, but unless the relevant setting is selected, they cannot damage targets.
+Allows users to use the damage tray for selected tokens that they own, and for targeted tokens (either that they own, or ones they don't own with a setting). User ability to use the damage tray is on by default, but unless the relevant setting is selected, they cannot damage targets.
 
 ## Settings
 - **Transfer to Target**: Allow users to transfer effects to targets with right click (on by default).
 - **Legacy Targeting for Effects**: Apply effects to target with right click, rather than the target source control (off by default).
 - **Damage Target**: Allow users to damage targets (that they don't own) with the damage tray (off by default).
 - **Delete Instead of Refresh**: Attempting to transfer an effect to an actor that has it already will delete it rather than refreshing its duration (off by default).
-- **Flag Effects with Level**: Adds a flag to active effects applied via the tray on spell messages indicating the level at which the spell was cast, with the scope `ActiveEffect#flags.dnd5e.spellLevel`. This will be provided by the system in 3.2, so it will be on by default (this setting will be removed in 3.2 and enabled for all installs).
 - **Filtering** based on actor type, permissions, and token disposition. This prevents users from seeing and interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
 - **Use Default Trays**: Adds settings (off by default) to use the default effects and damage trays. Only the features *below* this setting will function if a given tray is in its default mode.
 - **Expand Effects Tray**: The effect tray on chat messages starts in its expanded position when the message is created (on by default).
@@ -20,6 +19,93 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Scroll on Expand**: Scroll chat to bottom when expanding a tray that is at the bottom (experimental, on by default).
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
+
+## API
+Now includes three helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect`, `effectiv.applyDamage` and `effective.partitionTargets`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
+
+`applyEffect`, a helper function to allow users to apply effects. It allows users to apply effects via macro (or other module), and can take a variety of types of data when doing so, allowing effect data to be passed as the full ActiveEffect document, an effect Uuid, or an object (note that passing it as an object will not interact with refreshing duration or deleting effects of same origin, as determined by module setting, because creating an effect from an object will have its own unique origin). Similarly, this function allows target data to be passed as an array of Uuids, a single Uuid, an array of Tokens, or a Set, as `game.user.targets`.
+
+This helper also allows the use of the other things the effects tray does, primarily flagging effects with spellLevel, or any other arbitrary flags (via effectData), and making an effect dependent on a concentration effect (so it will be deleted when the concentration effect is). If concentration is used, because it passed as an ID, you must also pass the Uuid or Actor document of the actor the concentration effect is on.
+
+```js
+/**
+ * Helper function to allow for macros or other applications to apply effects to owned and unowned targets.
+ * @param {string|object|ActiveEffect5e} effect            The effect to apply.
+ * @param {Set<Token5e>|Token5e[]|string[]|string} targets Targeted tokens.
+ * @param {object} [options]
+ * @param {object} [options.effectData]                    A generic data object, which typically handles the level the originating spell was cast at, 
+ *                                                         if it originated from a spell, if any. Use flags like { "flags.dnd5e.spellLevel": 1 }.
+ * @param {string} [options.concentration]                 The ID (not Uuid) of the concentration effect this effect is dependent on, if any.
+ * @param {string|Actor5e} [options.caster]                The Uuid or Actor5e document of the actor that cast the spell that requires concentration, if any.
+ */
+async function applyEffect(
+  effect, 
+  targets, 
+  { effectData: null, concentration: null, caster: null } = {}
+)
+```
+```js
+/* in use...*/
+effectiv.applyEffect(
+  effect, 
+  targets, 
+  { effectData: null, concentration: null, caster: null } = {}
+)
+```
+
+`applyDamage`, helper function to allow users to apply damage. This function has been tested not at all and is included as a courtesy. Personally I find the way damage information must be structured to respect resistances, etc is too much of a mess to test this even a single time, but if someone really wants to do this over a socket but didn't write their own socket handler for it...here you go. Full, extensive documentation of the array that must be created is in scripts/api.mjs, copied directly from `dnd5e`, with the exception that socket transmission requires the sets to be arrays. Unlike `applyEffect`, this applies no damage via the requesting client, and so is basically only meant for damaging unowned targets. Users wishing to apply damage to owned targets should simply use the system's `Actor#applyDamage`.
+```js
+/**
+ * Helper function to allow for macros or other applications to apply damage via socket request.
+ * @param {array} damage Array of damage objects; see above.
+ * @param {array} opts   Object of options (which may inlude arrays); see above.
+ * @param {string} id    Uuid of the target.
+ */
+async function applyDamage(damage = [], opts = {}, id)
+```
+```js  
+/* in use...*/
+effectiv.applyDamage(damage = [], opts = {}, id)
+```
+
+`partitionTargets`, a function similar to foundry's `Array#partition` but specifically designed to handle `game.user.targets`, a set, or an array of tokens. It sorts them into two arrays, the first array containing tokens that the user owns, and the second array containing those token's `document.uuid`s. This can be useful for determining what information needs to be sent over sockets. I have no idea why anyone would use this function, but here it is.
+```js
+/**
+ * Sort tokens into owned and unowned categories.
+ * @param {Set|array} targets The set or array of tokens to be sorted.
+ * @returns {array}           An Array of length two, the elements of which are the partitioned pieces of the original.
+ */
+function partitionTargets(targets)
+```
+```js
+/* in use...*/
+effectiv.partitionTargets(targets)
+```
+
+## Hooks
+Now includes two hooks, `effectiv.preApplyEffect` and `effectiv.applyEffect`. The former allows the data to be modified and explicitly returning `false` will prevent the effect from being applied. The later passes the same (modified in the case of effectData), information in its final state upon application. 
+
+These hooks have not been extensively tested.
+```js
+/**
+ * Hook called before the effect is completed and applied.
+ * @param {Actor5e} actor                The actor to create the effect on.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+ */
+Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
+```
+```js
+/**
+ * Hook called before the effect is completed and applied. Same as abvove except for effectData
+ * @param {Actor5e} actor                The actor to create the effect on.
+ * @param {ActiveEffect5e} effect        The effect to create.
+ * @param {object} effectData            The packaged effect immediately before application.
+ * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+ */
+Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+```
 ___
 ###### **Technical Details**
 
