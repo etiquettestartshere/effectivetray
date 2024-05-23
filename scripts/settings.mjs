@@ -115,6 +115,7 @@ export class moduleSettings {
       onChange: false
     });
 
+    /*
     game.settings.register(MODULE, "expandEffect", {
       name: "EFFECTIVETRAY.ExpandEffectSettingName",
       hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
@@ -136,6 +137,7 @@ export class moduleSettings {
       requiresReload: true,
       onChange: false
     });
+    */
 
     game.settings.register(MODULE, "dontCloseOnPress", {
       name: "EFFECTIVETRAY.DontCloseOnPressSettingName",
