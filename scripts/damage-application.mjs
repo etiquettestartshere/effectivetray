@@ -37,10 +37,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     this.chatMessage = game.messages.get(messageId);
     if (!this.chatMessage) return;
 
-    // Build the frame HTML only once (technically, we've built it twice by this point :weary:)
+    // Build the frame HTML only once
     if (!this.targetList) {
       const div = document.createElement("div");
-      div.classList.add("card-tray", "damage-tray", "collapsible", "collapsed");
+      div.classList.add("card-tray", "damage-tray", "collapsible");
+      if (!this.open) div.classList.add("collapsed");
       div.innerHTML = `
         <label class="roboto-upper">
           <i class="fa-solid fa-heart-crack"></i>
@@ -74,16 +75,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         b.addEventListener("click", this._onChangeTargetMode.bind(this))
       );
       if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
-
-      // If damageTarget setting is disabled, check if users own any targeted tokens, otherwise use "selected" mode
       if (!game.settings.get(MODULE, "damageTarget")) {
         const targets = this.chatMessage.getFlag("dnd5e", "targets");
         if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
       };
-
-      div.querySelector(".collapsible-content").addEventListener("click", event => {
-        event.stopImmediatePropagation();
-      });
+      div.addEventListener("click", this._handleClickHeader.bind(this));
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";

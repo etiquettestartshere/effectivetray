@@ -115,30 +115,6 @@ export class moduleSettings {
       onChange: false
     });
 
-    /*
-    game.settings.register(MODULE, "expandEffect", {
-      name: "EFFECTIVETRAY.ExpandEffectSettingName",
-      hint: "EFFECTIVETRAY.ExpandEffectSettingHint",
-      scope: "client",
-      config: true,
-      type: Boolean,
-      default: true,
-      requiresReload: true,
-      onChange: false
-    });
-
-    game.settings.register(MODULE, "expandDamage", {
-      name: "EFFECTIVETRAY.ExpandDamageSettingName",
-      hint: "EFFECTIVETRAY.ExpandDamageSettingHint",
-      scope: "client",
-      config: true,
-      type: Boolean,
-      default: true,
-      requiresReload: true,
-      onChange: false
-    });
-    */
-
     game.settings.register(MODULE, "dontCloseOnPress", {
       name: "EFFECTIVETRAY.DontCloseOnPressSettingName",
       hint: "EFFECTIVETRAY.DontCloseOnPressSettingHint",

@@ -5,7 +5,6 @@ import { MODULE, socketID } from "./const.mjs";
 /* -------------------------------------------- */
 export class effectiveTray {
   static init() {
-    //Hooks.on("dnd5e.renderChatMessage", effectiveTray._expandEffect);
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) {
@@ -14,7 +13,8 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
     };
-    if (game.settings.get(MODULE, "expandEffect") || game.settings.get(MODULE, "expandDamage")) {
+    const collapseSetting = game.settings.get("dnd5e", "autoCollapseChatTrays")
+    if (collapseSetting === "older" || collapseSetting === "never") {
       Hooks.on("ready", effectiveTray._readyScroll);
     };
   };
@@ -205,20 +205,6 @@ export class effectiveTray {
     };
   };
 
-  // Expand effects tray on chat messages
-  /*
-  static async _expandEffect(message, html) {
-    if (!game.settings.get(MODULE, "expandEffect")) return;
-    const tray = html.querySelector('.effects-tray');
-    if (!tray) return;
-    const mid = message.id;
-    if (game.settings.get(MODULE, "dontCloseOnPress")) tray.classList.add("et-uncollapsed");
-    await new Promise(r => setTimeout(r, 108));
-    await tray.classList.remove("collapsed");
-    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
-  };
-  */
-
   // Check and see if the effects tray needs to be scrolled
   static _scrollEffectsTray(message, html) {
     if (!game.settings.get(MODULE, "scrollOnExpand")) return;
@@ -237,7 +223,6 @@ export class effectiveTray {
 /* -------------------------------------------- */
 export class effectiveDamage {
   static init() {
-    //Hooks.on("dnd5e.renderChatMessage", effectiveDamage._expandDamage);
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageCollapse);
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._scrollDamageTray);
     if (!game.settings.get(MODULE, "damageDefault")) {
@@ -283,33 +268,6 @@ export class effectiveDamage {
       element.toggleAttribute("open", !collapse);
     }
   }
-
-  // Expand the damage tray
-  /*
-  static async _expandDamage(message, html) {
-    if (!game.settings.get(MODULE, "expandDamage")) return;
-    await new Promise(r => setTimeout(r, 100));
-    const tray = html.querySelector('.damage-tray');
-    if (!tray) return;
-    tray.classList.remove("collapsed");
-    tray.classList.add("et-uncollapsed");
-    const mid = message.id;
-    if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
-    const upper = tray.querySelector(".roboto-upper");
-    upper.addEventListener('click', (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      if (html.querySelector(".damage-tray.et-uncollapsed")) {
-        if (!html.querySelector(".damage-tray.collapsed")) tray.classList.add("collapsed");
-        tray.classList.toggle("et-uncollapsed");
-      } else {
-        if (html.querySelector(".damage-tray.collapsed")) tray.classList.remove("collapsed");
-        tray.classList.add("et-uncollapsed");
-        if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
-      };
-    });
-  };
-  */
 
   // Handle damage tray collapse behavior
   static async _damageCollapse(message, html) {
