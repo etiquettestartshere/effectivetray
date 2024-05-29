@@ -51,7 +51,8 @@ export class effectiveTray {
   static async _effectTray(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
-    const uuid = message.flags?.dnd5e?.use?.itemUuid;
+    if (foundry.utils.hasProperty(message, "flags.dnd5e.use.enchantmentProfile")) return;
+    const uuid = foundry.utils.getProperty(message, "flags.dnd5e.use.itemUuid");
     if (!uuid) return;
     const item = await fromUuid(uuid);
     const effects = item?.effects?.contents;
@@ -82,8 +83,8 @@ export class effectiveTray {
         "EFFECTIVETRAY.TOOLTIP.EffectsApplyTokens"
     ) : "DND5E.EffectsApplyTokens";
     let spellLevel;
-    if (!message.flags?.dnd5e?.use?.spellLevel) spellLevel = 0;
-    else spellLevel = parseInt(message.flags?.dnd5e?.use?.spellLevel) || null;
+    if (item.system.level === 0) spellLevel = 0;
+    else spellLevel = parseInt(html.querySelector('.item-card').dataset.spellLevel) || null;
     const effectData = { "flags.dnd5e.spellLevel": spellLevel };
     const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
     const caster = actor.uuid;
