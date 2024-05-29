@@ -13,8 +13,6 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Delete Instead of Refresh**: Attempting to transfer an effect to an actor that has it already will delete it rather than refreshing its duration (off by default).
 - **Filtering** based on actor type, permissions, and token disposition. This prevents users from seeing and interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
 - **Use Default Trays**: Adds settings (off by default) to use the default effects and damage trays. Only the features *below* this setting will function if a given tray is in its default mode.
-- **Expand Effects Tray**: The effect tray on chat messages starts in its expanded position when the message is created (on by default).
-- **Expand Damage Tray**: The damage tray on chat messages starts in its expanded position when the message is created (on by default).
 - **Don't Close Trays on Apply**: Don't automatically close trays when hitting submit. Won't work with default effects tray (now off by default).
 - **Scroll on Expand**: Scroll chat to bottom when expanding a tray that is at the bottom (experimental, on by default).
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).

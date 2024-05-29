@@ -37,10 +37,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     this.chatMessage = game.messages.get(messageId);
     if (!this.chatMessage) return;
 
-    // Build the frame HTML only once (technically, we've built it twice by this point :weary:)
+    // Build the frame HTML only once
     if (!this.targetList) {
       const div = document.createElement("div");
-      div.classList.add("card-tray", "damage-tray", "collapsible", "collapsed");
+      div.classList.add("card-tray", "damage-tray", "collapsible");
+      if (!this.open) div.classList.add("collapsed");
       div.innerHTML = `
         <label class="roboto-upper">
           <i class="fa-solid fa-heart-crack"></i>
@@ -74,16 +75,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         b.addEventListener("click", this._onChangeTargetMode.bind(this))
       );
       if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
-
-      // If damageTarget setting is disabled, check if users own any targeted tokens, otherwise use "selected" mode
       if (!game.settings.get(MODULE, "damageTarget")) {
         const targets = this.chatMessage.getFlag("dnd5e", "targets");
         if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
       };
-
-      div.querySelector(".collapsible-content").addEventListener("click", event => {
-        event.stopImmediatePropagation();
-      });
+      div.addEventListener("click", this._handleClickHeader.bind(this));
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
@@ -98,8 +94,9 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   buildTargetListEntry(uuid) {
     const token = fromUuidSync(uuid);
 
+    // Calculate damage to apply
     const targetOptions = this.getTargetOptions(uuid);
-    const { total, active } = this.calculateDamage(token, targetOptions);
+    const { temp, total, active } = this.calculateDamage(token, targetOptions);
 
     const types = [];
     for (const [change, values] of Object.entries(active)) {
@@ -113,13 +110,13 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     const changeSources = types.reduce((acc, { type, change, icon }) => {
       const { label, pressed } = this.getChangeSourceOptions(type, change, targetOptions);
       acc += `
-          <button class="change-source unbutton" type="button" data-type="${type}" data-change="${change}"
-                  data-tooltip="${label}" aria-label="${label}" aria-pressed="${pressed}">
-            <dnd5e-icon src="${icon}" inert></dnd5e-icon>
-            <i class="fa-solid fa-slash" inert></i>
-            <i class="fa-solid fa-arrow-turn-down" inert></i>
-          </button>
-        `;
+        <button class="change-source unbutton" type="button" data-type="${type}" data-change="${change}"
+                data-tooltip="${label}" aria-label="${label}" aria-pressed="${pressed}">
+          <dnd5e-icon src="${icon}" inert></dnd5e-icon>
+          <i class="fa-solid fa-slash" inert></i>
+          <i class="fa-solid fa-arrow-turn-down" inert></i>
+        </button>
+      `;
       return acc;
     }, "");
 
@@ -127,25 +124,28 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     li.classList.add("target");
     li.dataset.targetUuid = uuid;
     li.innerHTML = `
-        <img class="gold-icon" alt="${token.name}" src="${token.img}">
-        <div class="name-stacked">
-          <span class="title">${token.name}</span>
-          ${changeSources ? `<span class="subtitle">${changeSources}</span>` : ""}
-        </div>
-        <div class="calculated-damage">
-          ${total}
-        </div>
-        <menu class="damage-multipliers unlist"></menu>
-      `;
+      <img class="gold-icon" alt="${token.name}" src="${token.img}">
+      <div class="name-stacked">
+        <span class="title">${token.name}</span>
+        ${changeSources ? `<span class="subtitle">${changeSources}</span>` : ""}
+      </div>
+      <div class="calculated damage">
+        ${total}
+      </div>
+      <div class="calculated temp" data-tooltip="DND5E.HitPointsTemp">
+        ${temp}
+      </div>
+      <menu class="damage-multipliers unlist"></menu>
+    `;
 
     const menu = li.querySelector("menu");
     for (const [value, display] of MULTIPLIERS) {
       const entry = document.createElement("li");
       entry.innerHTML = `
-          <button class="multiplier-button" type="button" value="${value}">
-            <span>${display}</span>
-          </button>
-        `;
+        <button class="multiplier-button" type="button" value="${value}">
+          <span>${display}</span>
+        </button>
+      `;
       menu.append(entry);
     }
 
@@ -189,6 +189,6 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         await game.socket.emit(socketID, { type: "damage", data: { id, opts, damage } });
       };
     }
-    this.querySelector(".collapsible").dispatchEvent(new PointerEvent("click", { bubbles: true, cancelable: true }));
+    this.open = false;
   }
 }
