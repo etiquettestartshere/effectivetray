@@ -8,7 +8,7 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 
 ## Settings
 - **Transfer to Target**: Allow users to transfer effects to targets with right click (on by default).
-- **Legacy Targeting for Effects**: Apply effects to target with right click, rather than the target source control (off by default).
+- **Legacy Targeting for Effects**: Apply effects to target with right click, rather than the target source control (on by default).
 - **Damage Target**: Allow users to damage targets (that they don't own) with the damage tray (off by default).
 - **Delete Instead of Refresh**: Attempting to transfer an effect to an actor that has it already will delete it rather than refreshing its duration (off by default).
 - **Filtering** based on actor type, permissions, and token disposition. This prevents users from seeing and interacting with effects of certain origins, depending on GM preference (no filtering is performed by default).
