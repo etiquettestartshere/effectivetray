@@ -56,7 +56,7 @@ export class effectiveTray {
     const item = await fromUuid(uuid);
     const effects = item?.effects?.contents;
     if (foundry.utils.isEmpty(effects)) return;
-    if (!effects.some(e=>e.flags.dnd5e.type !== "enchantment")) return;
+    if (!effects.some(effect => foundry.utils.getProperty(effect, "flags.dnd5e.type") === "enchantment")) return;
     const actor = item.parent;
 
     // Handle filtering
@@ -89,7 +89,8 @@ export class effectiveTray {
     const concentration = actor.effects.get(message.getFlag("dnd5e", "use.concentrationId"));
     const caster = actor.uuid;
     for (const effect of effects) {
-      if (effect.flags.dnd5e.type === "enchantment" || effect.flags.dnd5e.rider) continue;
+      if (foundry.utils.getProperty(effect, "flags.dnd5e.type") === "enchantment" ||
+        foundry.utils.getProperty(effect, "flags.dnd5e.rider")) continue;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
