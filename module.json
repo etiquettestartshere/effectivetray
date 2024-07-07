@@ -1,10 +1,10 @@
 {
   "id": "effectivetray",
   "title": "Effective Tray",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "compatibility": {
     "minimum": "11",
-    "verified": "11"
+    "verified": "12"
   },
   "esmodules": ["scripts/setup.mjs"],
   "styles": ["styles/effectivetray.css"],

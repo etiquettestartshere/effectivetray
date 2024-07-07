@@ -53,12 +53,58 @@ effectiv.applyEffect(
 
 `applyDamage`, helper function to allow users to apply damage. This function has been tested not at all and is included as a courtesy. Personally I find the way damage information must be structured to respect resistances, etc is too much of a mess to test this even a single time, but if someone really wants to do this over a socket but didn't write their own socket handler for it...here you go. Full, extensive documentation of the array that must be created is in scripts/api.mjs, copied directly from `dnd5e`, with the exception that socket transmission requires the sets to be arrays. Unlike `applyEffect`, this applies no damage via the requesting client, and so is basically only meant for damaging unowned targets. Users wishing to apply damage to owned targets should simply use the system's `Actor#applyDamage`.
 ```js
-/**
- * Helper function to allow for macros or other applications to apply damage via socket request.
- * @param {array} damage Array of damage objects; see above.
- * @param {array} opts   Object of options (which may inlude arrays); see above.
- * @param {string} id    Uuid of the target.
- */
+  /**
+   * The below documentation is from the system's damage application method, except all Sets are arrays.
+   * Please see the system's documentation for a complete understanding of this method, as this helper is only
+   * provided as a courtesy.
+   * 
+   * Description of a source of damage. 
+   *
+   * @typedef {object} DamageDescription
+   * @property {number} value            Amount of damage.
+   * @property {string} type             Type of damage.
+   * @property {Array<string>} properties  Physical properties that affect damage application.
+   * @property {object} [active]
+   * @property {number} [active.multiplier]      Final calculated multiplier.
+   * @property {boolean} [active.modifications]  Did modification affect this description?
+   * @property {boolean} [active.resistance]     Did resistance affect this description?
+   * @property {boolean} [active.vulnerability]  Did vulnerability affect this description?
+   * @property {boolean} [active.immunity]       Did immunity affect this description?
+   */
+
+  /**
+   * Options for damage application.
+   *
+   * @typedef {object} DamageApplicationOptions
+   * @property {boolean|Array<string>} [downgrade]  Should this actor's resistances and immunities be downgraded by one
+   *                                              step? A Array of damage types to be downgraded or `true` to downgrade
+   *                                              all damage types.
+   * @property {number} [multiplier=1]         Amount by which to multiply all damage.
+   * @property {object|boolean} [ignore]       Array to `true` to ignore all damage modifiers. If Array to an object, then
+   *                                           values can either be `true` to indicate that the all modifications of
+   *                                           that type should be ignored, or a Array of specific damage types for which
+   *                                           it should be ignored.
+   * @property {boolean|Array<string>} [ignore.immunity]       Should this actor's damage immunity be ignored?
+   * @property {boolean|Array<string>} [ignore.resistance]     Should this actor's damage resistance be ignored?
+   * @property {boolean|Array<string>} [ignore.vulnerability]  Should this actor's damage vulnerability be ignored?
+   * @property {boolean|Array<string>} [ignore.modification]   Should this actor's damage modification be ignored?
+   * @property {boolean} [invertHealing=true]  Automatically invert healing types to it heals, rather than damages.
+   * @property {"damage"|"healing"} [only]     Apply only damage or healing parts. Untyped rolls will always be applied.
+   */
+
+  /**
+   * Apply a certain amount of damage or healing to the health pool for Actor
+   * @param {DamageDescription[]|number} damages     Damages to apply.
+   * @param {DamageApplicationOptions} [options={}]  Damage application options.
+   * @returns {Promise<Actor5e>}                     A Promise which resolves once the damage has been applied.
+   */
+
+  /**
+   * Helper function to allow for macros or other applications to apply damage via socket request.
+   * @param {array} damage Array of damage objects; see above.
+   * @param {array} opts   Object of options (which may inlude arrays); see above.
+   * @param {string} id    Uuid of the target.
+   */
 async function applyDamage(damage = [], opts = {}, id)
 ```
 ```js  

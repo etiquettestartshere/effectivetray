@@ -93,7 +93,7 @@ export class effectiveTray {
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
-          <img class="gold-icon" alt=${effect.name} src=${effect.icon}>
+          <img class="gold-icon" alt=${effect.name} src=${effect.img}>
           <div class="name-stacked">
             <span class="title">${effect.name}</span>
             <span class="subtitle">${label}</span>
