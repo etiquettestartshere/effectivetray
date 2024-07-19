@@ -17,7 +17,23 @@ export class effectiveTray {
     if (collapseSetting === "older" || collapseSetting === "never") {
       Hooks.on("ready", effectiveTray._readyScroll);
     };
+
+    // Add dependent effect to a concentration effect.
+    Hooks.on("createActiveEffect", effectiveTray.#addDependent);
   };
+
+  /**
+   * When an effect is created, if a specific user id and concentration uuid is passed,
+   * add the created effect as a dependent on the concentration effect.
+   * @param {ActiveEffect5e} effect     The effect that was created.
+   * @param {object} operation          The creation context.
+   */
+  static async #addDependent(effect, operation) {
+    const {userId, concentrationUuid} = operation.effectiv ?? {};
+    if (game.user.id !== userId) return;
+    const concentration = await fromUuid(concentrationUuid);
+    if (concentration) concentration.addDependent(effect);
+  }
 
   // Scroll chat to bottom on ready if any trays have been expanded
   static async _readyScroll() {
@@ -159,7 +175,7 @@ export class effectiveTray {
           </button>
           <button type="button" class="unbutton" data-mode="selected" aria-pressed="false">
             <i class="fa-solid fa-expand" inert=""></i> Selected
-          </button>        
+          </button>
         </div>
         `
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("afterbegin", tsc);
@@ -447,8 +463,15 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
       transfer: false,
       origin: origin.uuid
     }, effectData);
-    const applied = await ActiveEffect.implementation.create(effectData, { parent: actor });
-    if (concentration) await concentration.addDependent(applied);
+
+    // Find an owner of the concentration effect and request that they add the dependent effect.
+    const context = { parent: actor };
+    if (concentration && !concentration.isOwner) {
+      const userId = game.users.find(u => u.active && concentration.testUserPermission(u, "OWNER"))?.id;
+      if (userId) context.effectiv = { userId: userId, concentrationUuid: concentration.uuid };
+    }
+    const applied = await ActiveEffect.implementation.create(effectData, context);
+    if (concentration && concentration.isOwner) await concentration.addDependent(applied);
 
     // Call the effect hook
     Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
