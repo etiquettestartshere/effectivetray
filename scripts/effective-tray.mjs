@@ -17,10 +17,11 @@ export class effectiveTray {
     if (collapseSetting === "older" || collapseSetting === "never") {
       Hooks.on("ready", effectiveTray._readyScroll);
     };
+    Hooks.on("preCreateActiveEffect", effectiveTray._enchantmentSpellLevel);
 
     // Add dependent effect to a concentration effect.
     Hooks.on("createActiveEffect", effectiveTray.#addDependent);
-  };
+  }
 
   /**
    * When an effect is created, if a specific user id and concentration uuid is passed,
@@ -29,7 +30,7 @@ export class effectiveTray {
    * @param {object} operation          The creation context.
    */
   static async #addDependent(effect, operation) {
-    const {userId, concentrationUuid} = operation.effectiv ?? {};
+    const { userId, concentrationUuid } = operation.effectiv ?? {};
     if (game.user.id !== userId) return;
     const concentration = await fromUuid(concentrationUuid);
     if (concentration) concentration.addDependent(effect);
@@ -39,7 +40,7 @@ export class effectiveTray {
   static async _readyScroll() {
     await new Promise(r => setTimeout(r, 108));
     window.ui.chat.scrollBottom({ popout: true });
-  };
+  }
 
   /**
    * Remove transfer from all effects with duration
@@ -56,7 +57,26 @@ export class effectiveTray {
         effect.updateSource({ "transfer": false });
       };
     };
-  };
+  }
+
+  /**
+   * Before an effect is created, if it is an enchantment from a spell,
+   * add a flag indicating the level of the spell.
+   * @param {ActiveEffect5e} effect     The effect that will be created.
+   */
+  static _enchantmentSpellLevel(effect, data, options) {
+    if (!options.chatMessageOrigin) return;
+    if (!effect?.flags?.dnd5e?.enchantment) return;
+    const msg = game.messages.get(options.chatMessageOrigin);
+    const lvl = msg.flags?.dnd5e?.use?.spellLevel;
+    if (!lvl) return;
+    let spellLevel;
+    if (lvl === 0) spellLevel = 0;
+    else spellLevel = parseInt(lvl) || null;
+    const flags = effect.flags.dnd5e;
+    const newFlags = foundry.utils.mergeObject(flags, { "spellLevel": spellLevel });
+    effect.updateSource({ "flags.dnd5e": newFlags });
+  }
 
   /**
    * Make the effects tray effective
@@ -72,7 +92,7 @@ export class effectiveTray {
     const item = await fromUuid(uuid);
     const effects = item?.effects?.contents;
     if (foundry.utils.isEmpty(effects)) return;
-    if (!effects.some(e=>e.flags?.dnd5e?.type !== "enchantment")) return;
+    if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
     const actor = item.parent;
 
     // Handle filtering
@@ -83,12 +103,12 @@ export class effectiveTray {
       if (token && filterDis === 3 && token.disposition <= 0 && !token?.isOwner) return;
       else if (token && filterDis === 2 && token.disposition <= -1 && !token?.isOwner) return;
       else if (token && filterDis === 1 && token.disposition <= -2 && !token?.isOwner) return;
-    };
+    }
     const filterPer = game.settings.get(MODULE, "filterPermission");
     if (filterPer) {
       if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
       else if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
-    };
+    }
 
     // Replace the effects in the tray
     const old = html.querySelectorAll('.effects-tray .effect:not(:has(> ul:empty))');
@@ -106,6 +126,7 @@ export class effectiveTray {
     const caster = actor.uuid;
     for (const effect of effects) {
       if (effect.flags?.dnd5e?.type === "enchantment" || effect.flags?.dnd5e?.rider) continue;
+      if (effect.transfer === true) continue;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
         <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
@@ -198,13 +219,12 @@ export class effectiveTray {
         button.addEventListener('click', async () => {
           if (!tray.querySelector(".et-uncollapsed")) {
             await tray.classList.add("et-uncollapsed");
-            await new Promise(r => setTimeout(r, 108));
             await tray.classList.remove("collapsed");
           };
         });
       };
     };
-  };
+  }
 
   // Handle effects tray collapse behavior for default trays with don't close on submit
   static _effectCollapse(message, html) {
@@ -221,7 +241,7 @@ export class effectiveTray {
         tray.classList.remove("et-uncollapsed");
       });
     };
-  };
+  }
 
   // Check and see if the effects tray needs to be scrolled
   static _scrollEffectsTray(message, html) {
@@ -234,7 +254,7 @@ export class effectiveTray {
       });
     };
   };
-};
+}
 
 /* -------------------------------------------- */
 /*  Damage Handling                             */
@@ -247,7 +267,7 @@ export class effectiveDamage {
       Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageTray);
     };
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._collapseTrays);
-  };
+  }
 
   /**
    * Make the damage tray effective
@@ -269,8 +289,13 @@ export class effectiveDamage {
         html.querySelector(".message-content").appendChild(damageApplication);
       };
     };
-  };
+  }
 
+  /**
+ * Adapted from dnd5e
+ * Handle collapsing or expanding trays depending on user settings.
+ * @param {HTMLElement} html  Rendered contents of the message.
+ */
   static async _collapseTrays(message, html) {
     let collapse;
     switch (game.settings.get("dnd5e", "autoCollapseChatTrays")) {
@@ -278,53 +303,55 @@ export class effectiveDamage {
       case "never": collapse = false; break;
       // Collapse chat message trays older than 5 minutes
       case "older": collapse = message.timestamp < Date.now() - (5 * 60 * 1000); break;
-    }
+    };
     for (const tray of html.querySelectorAll(".card-tray, .effects-tray")) {
       tray.classList.toggle("collapsed", collapse);
-    }
+    };
     for (const element of html.querySelectorAll("effective-damage-application")) {
       element.toggleAttribute("open", !collapse);
-    }
+    };
   }
 
   // Handle damage tray collapse behavior
-  static async _damageCollapse(message, html) {
-    await new Promise(r => setTimeout(r, 108));
-    const tray = html.querySelector('.damage-tray');
-    if (!tray) return;
-    const button = tray.querySelector("button.apply-damage");
-    button.addEventListener('click', (event) => {
-      if (game.settings.get(MODULE, "dontCloseOnPress")) {
-        event.preventDefault();
-        event.stopPropagation();
-        tray.classList.remove("collapsed");
-        tray.classList.add("et-uncollapsed");
-      } else {
-        if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
-      };
-    });
-    const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-    upper.addEventListener('click', () => {
-      if (html.querySelector(".damage-tray.et-uncollapsed")) {
-        tray.classList.toggle("et-uncollapsed");
-        tray.classList.remove("collapsed");
-      };
-    });
-  };
+  static _damageCollapse(message, html) {
+    Hooks.once("dnd5e.calculateDamage", function() {
+      const tray = html.querySelector('.damage-tray');
+      if (!tray) return;
+      const button = tray.querySelector("button.apply-damage");
+      button.addEventListener('click', (event) => {
+        if (game.settings.get(MODULE, "dontCloseOnPress")) {
+          event.preventDefault();
+          event.stopPropagation();
+          tray.classList.remove("collapsed");
+          tray.classList.add("et-uncollapsed");
+        } else {
+          if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
+        };
+      });
+      const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
+      upper.addEventListener('click', () => {
+        if (html.querySelector(".damage-tray.et-uncollapsed")) {
+          tray.classList.toggle("et-uncollapsed");
+          tray.classList.remove("collapsed");
+        };
+      });
+    }); 
+  }
 
   // Check and see if the damage tray needs to be scrolled
-  static async _scrollDamageTray(message, html) {
+  static _scrollDamageTray(message, html) {
     if (!game.settings.get(MODULE, "scrollOnExpand")) return;
-    await new Promise(r => setTimeout(r, 112));
-    const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-    if (upper) {
-      const mid = message.id;
-      upper.addEventListener('click', () => {
-        if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
-      });
-    };
-  };
-};
+    Hooks.once("dnd5e.calculateDamage", function() {
+      const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
+      if (upper) {
+        const mid = message.id;
+        upper.addEventListener('click', () => {
+          if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
+        });
+      };
+    });
+  }
+}
 
 /* -------------------------------------------- */
 /*  Socket Handling                             */
@@ -345,8 +372,8 @@ export class effectiveSocket {
           _damageSocket(request);
       };
     });
-  };
-};
+  }
+}
 
 // Make the GM client apply effects to the requested targets
 async function _effectSocket(request) {
@@ -366,7 +393,7 @@ async function _effectSocket(request) {
   for (const actor of actors) {
     await _applyEffects(actor, effect, { effectData, concentration });
   };
-};
+}
 
 // Make the GM client apply damage to the requested targets
 async function _damageSocket(request) {
@@ -386,7 +413,7 @@ async function _damageSocket(request) {
   if (opts?.ignore?.vulnerability) foundry.utils.mergeObject(opts, { "ignore.vulnerability": new Set(opts.ignore.vulnerability) });
   if (opts?.ignore?.modification) foundry.utils.mergeObject(opts, { "ignore.modification": new Set(opts.ignore.modification) });
   return await _applyTargetDamage(id, opts, damage);
-};
+}
 
 /* -------------------------------------------- */
 /*  Functions                                   */
@@ -423,7 +450,7 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
     const con = concentration?.id;
     await game.socket.emit(socketID, { type: "effect", data: { origin, targets, effectData, con, caster } });
   };
-};
+}
 
 /**
  * Apply effect, or refresh its duration (and level) if it exists
@@ -478,7 +505,7 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
 
     return applied;
   };
-};
+}
 
 /**
  * Apply damage
@@ -489,13 +516,13 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
 async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
   await actor.applyDamage(damage, options);
-};
+}
 
 /**
  * Scroll tray to bottom if at bottom
  * @param {string} mid The message id.
  */
-async function _scroll(mid) {
+export async function _scroll(mid) {
   if (mid !== game.messages.contents.at(-1).id) return;
   if (window.ui.chat.isAtBottom) {
     await new Promise(r => setTimeout(r, 256));
@@ -505,7 +532,7 @@ async function _scroll(mid) {
     await new Promise(r => setTimeout(r, 256));
     window.ui.sidebar.popouts.chat.scrollBottom();
   };
-};
+}
 
 /**
  * Sort tokens into owned and unowned categories.
@@ -519,7 +546,7 @@ export function partitionTargets(targets) {
     return acc;
   }, [[], []]);
   return result;
-};
+}
 
 /**
  * Sort tokens into owned and unowned categories.
@@ -530,4 +557,4 @@ function _checkTray(tray) {
     tray.classList.add("collapsed");
     tray.classList.remove("et-uncollapsed");
   };
-};
+}

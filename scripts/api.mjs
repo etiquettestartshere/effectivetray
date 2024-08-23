@@ -1,5 +1,6 @@
-import { MODULE, socketID } from "./const.mjs";
+import { socketID } from "./const.mjs";
 import { _applyEffects, partitionTargets} from "./effective-tray.mjs";
+import { _scroll } from "./effective-tray.mjs";
 
 export class API {
 
@@ -7,9 +8,10 @@ export class API {
     globalThis.effectiv = {
       applyEffect: API.applyEffect,
       applyDamage: API.applyDamage,
-      partitionTargets: partitionTargets
+      partitionTargets: partitionTargets,
+      scroll: _scroll
     };
-  };
+  }
 
   /* -------------------------------------------- */
   /*  Effect Application Helper                   */
@@ -99,7 +101,7 @@ export class API {
         caster: spellCaster
       }
     });
-  };
+  }
 
   /* -------------------------------------------- */
   /*  Damage Application Helper                   */
@@ -110,5 +112,5 @@ export class API {
   static async applyDamage(damage = [], opts = {}, id) {
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
     await game.socket.emit(socketID, { type: "damage", data: { id, opts, damage } });
-  };
-};
+  }
+}

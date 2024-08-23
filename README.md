@@ -158,3 +158,5 @@ ___
 **License:** MIT License.
 
 **Additional Info:** Thanks to Zhell for help with adding actors to a set and lots of other stuff (and for the github action), and to Flix for much encouragement. Thanks also to ChaosOS for help with sockets, and DrentalBot for help with suppressing the system's context menu.
+
+Some code has been adapted from dnd5e [dnd5e](https://github.com/foundryvtt/dnd5e), particularly the extension of the damage application custom html element.
