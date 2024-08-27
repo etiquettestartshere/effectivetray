@@ -16,7 +16,7 @@ async function ownershipCheck(targets) {
     else continue;
   };
   return false;
-};
+}
 
 /* -------------------------------------------- */
 /*  Damage Application Extension (from dnd5e)   */

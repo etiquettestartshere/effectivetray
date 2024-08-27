@@ -4,7 +4,7 @@ export class moduleSettings {
 
   static init() {
     moduleSettings._chatSettings();
-  };
+  }
 
   static _chatSettings() {
     game.settings.register(MODULE, "allowTarget", {
@@ -158,5 +158,5 @@ export class moduleSettings {
       requiresReload: false,
       onChange: false
     });
-  };
-};
+  }
+}
