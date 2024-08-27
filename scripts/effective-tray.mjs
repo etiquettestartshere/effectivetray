@@ -9,6 +9,7 @@ export class effectiveTray {
     Hooks.on("preCreateItem", effectiveTray._removeTransfer);
     if (!game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectTray);
+      Hooks.on("preCreateActiveEffect", effectiveTray._enchantmentSpellLevel);
     };
     if (game.settings.get(MODULE, "dontCloseOnPress") && game.settings.get(MODULE, "systemDefault")) {
       Hooks.on("dnd5e.renderChatMessage", effectiveTray._effectCollapse);
@@ -17,7 +18,6 @@ export class effectiveTray {
     if (collapseSetting === "older" || collapseSetting === "never") {
       Hooks.on("ready", effectiveTray._readyScroll);
     };
-    Hooks.on("preCreateActiveEffect", effectiveTray._enchantmentSpellLevel);
 
     // Add dependent effect to a concentration effect.
     Hooks.on("createActiveEffect", effectiveTray.#addDependent);
