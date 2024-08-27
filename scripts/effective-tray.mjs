@@ -64,9 +64,8 @@ export class effectiveTray {
    * add a flag indicating the level of the spell.
    * @param {ActiveEffect5e} effect     The effect that will be created.
    */
-  static _enchantmentSpellLevel(effect, data, options) {
-    if (!options.chatMessageOrigin) return;
-    if (!effect?.flags?.dnd5e?.enchantment) return;
+  static async _enchantmentSpellLevel(effect, data, options) {
+    if (!effect.isAppliedEnchantment) return;
     const msg = game.messages.get(options.chatMessageOrigin);
     const lvl = msg.flags?.dnd5e?.use?.spellLevel;
     if (!lvl) return;
