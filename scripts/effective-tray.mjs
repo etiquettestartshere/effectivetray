@@ -313,43 +313,41 @@ export class effectiveDamage {
   }
 
   // Handle damage tray collapse behavior
-  static _damageCollapse(message, html) {
-    Hooks.once("dnd5e.calculateDamage", function() {
-      const tray = html.querySelector('.damage-tray');
-      if (!tray) return;
-      const button = tray.querySelector("button.apply-damage");
-      button.addEventListener('click', (event) => {
-        if (game.settings.get(MODULE, "dontCloseOnPress")) {
-          event.preventDefault();
-          event.stopPropagation();
-          tray.classList.remove("collapsed");
-          tray.classList.add("et-uncollapsed");
-        } else {
-          if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
-        };
-      });
-      const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-      upper.addEventListener('click', () => {
-        if (html.querySelector(".damage-tray.et-uncollapsed")) {
-          tray.classList.toggle("et-uncollapsed");
-          tray.classList.remove("collapsed");
-        };
-      });
-    }); 
+  static async _damageCollapse(message, html) {
+    await new Promise(r => setTimeout(r, 108));
+    const tray = html.querySelector('.damage-tray');
+    if (!tray) return;
+    const button = tray.querySelector("button.apply-damage");
+    button.addEventListener('click', (event) => {
+      if (game.settings.get(MODULE, "dontCloseOnPress")) {
+        event.preventDefault();
+        event.stopPropagation();
+        tray.classList.remove("collapsed");
+        tray.classList.add("et-uncollapsed");
+      } else {
+        if (html.querySelector(".damage-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
+      };
+    });
+    const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
+    upper.addEventListener('click', () => {
+      if (html.querySelector(".damage-tray.et-uncollapsed")) {
+        tray.classList.toggle("et-uncollapsed");
+        tray.classList.remove("collapsed");
+      };
+    });
   }
 
   // Check and see if the damage tray needs to be scrolled
-  static _scrollDamageTray(message, html) {
+  static async _scrollDamageTray(message, html) {
     if (!game.settings.get(MODULE, "scrollOnExpand")) return;
-    Hooks.once("dnd5e.calculateDamage", function() {
-      const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-      if (upper) {
-        const mid = message.id;
-        upper.addEventListener('click', () => {
-          if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
-        });
-      };
-    });
+    await new Promise(r => setTimeout(r, 112));
+    const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
+    if (upper) {
+      const mid = message.id;
+      upper.addEventListener('click', () => {
+        if (html.querySelector(".damage-tray.collapsed")) _scroll(mid);
+      });
+    };
   }
 }
 
