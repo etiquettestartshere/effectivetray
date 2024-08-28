@@ -12,5 +12,3 @@ Hooks.once("init", EffectiveSocket.init);
 Hooks.once("init", ModuleSettings.init);
 Hooks.once("init", EffectiveTray.init);
 Hooks.once("init", API.init);
-
-export { EffectiveDAE };

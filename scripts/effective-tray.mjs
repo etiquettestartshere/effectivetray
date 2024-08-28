@@ -1,9 +1,5 @@
-import { MODULE, SOCKET_ID } from "./const.mjs";
+import { MODULE } from "./const.mjs";
 import { EffectiveUtils } from "./effective-utilities.mjs";
-
-/* -------------------------------------------- */
-/*  Tray Handling                               */
-/* -------------------------------------------- */
 
 export class EffectiveTray {
   static init() {
@@ -16,13 +12,17 @@ export class EffectiveTray {
     // Add dependent effect to a concentration effect.
     Hooks.on("createActiveEffect", EffectiveTray.#addDependent);
 
-    // Handle expand/collapse/scroll
-    Hooks.on("dnd5e.renderChatMessage", EffectiveTray._collapseHandler);
-    Hooks.on("dnd5e.renderChatMessage", EffectiveTray._scrollTrays);
-
     // Modify the damage tray
     if (!game.settings.get(MODULE, "damageDefault")) {
       Hooks.on("dnd5e.renderChatMessage", EffectiveTray._damageTray);
+    };
+
+    // Handle expand/collapse/scroll
+    Hooks.on("dnd5e.renderChatMessage", EffectiveTray._collapseHandler);
+    Hooks.on("dnd5e.renderChatMessage", EffectiveTray._scrollTrays);
+    const collapseSetting = game.settings.get("dnd5e", "autoCollapseChatTrays")
+    if (collapseSetting === "older" || collapseSetting === "never") {
+      Hooks.on("ready", EffectiveTray._readyScroll);
     };
 
     // Implement the system's expand/collapse logic
@@ -31,11 +31,11 @@ export class EffectiveTray {
     // Misc
     Hooks.on("preCreateItem", EffectiveTray._removeTransfer);
     Hooks.on("preCreateActiveEffect", EffectiveTray._enchantmentSpellLevel);
-    const collapseSetting = game.settings.get("dnd5e", "autoCollapseChatTrays")
-    if (collapseSetting === "older" || collapseSetting === "never") {
-      Hooks.on("ready", EffectiveTray._readyScroll);
-    };
   }
+
+  /* -------------------------------------------- */
+  /*  Tray Handling                               */
+  /* -------------------------------------------- */
 
   /**
    * When an effect is created, if a specific user id and concentration uuid is passed,
@@ -48,47 +48,6 @@ export class EffectiveTray {
     if (game.user.id !== userId) return;
     const concentration = await fromUuid(concentrationUuid);
     if (concentration) concentration.addDependent(effect);
-  }
-
-  // Scroll chat to bottom on ready if any trays have been expanded
-  static async _readyScroll() {
-    await new Promise(r => setTimeout(r, 108));
-    window.ui.chat.scrollBottom({ popout: true });
-  }
-
-  /**
-   * Remove transfer from all effects with duration
-   * @param {Item} item The item from which to remove "transfer": true.
-   */
-  static _removeTransfer(item) {
-    if (!game.settings.get(MODULE, "removeTransfer")) return;
-    const effects = item.effects.contents;
-    if (!effects) return;
-    for (const effect of effects) {
-      const transfer = effect.transfer;
-      const duration = effect.duration;
-      if (transfer && (duration.seconds || duration.turns || duration.rounds)) {
-        effect.updateSource({ "transfer": false });
-      };
-    };
-  }
-
-  /**
-   * Before an effect is created, if it is an enchantment from a spell,
-   * add a flag indicating the level of the spell.
-   * @param {ActiveEffect5e} effect     The effect that will be created.
-   */
-  static async _enchantmentSpellLevel(effect, data, options) {
-    if (!effect.isAppliedEnchantment) return;
-    const msg = game.messages.get(options.chatMessageOrigin);
-    const lvl = msg.flags?.dnd5e?.use?.spellLevel;
-    if (!lvl) return;
-    let spellLevel;
-    if (lvl === 0) spellLevel = 0;
-    else spellLevel = parseInt(lvl) || null;
-    const flags = effect.flags.dnd5e;
-    const newFlags = foundry.utils.mergeObject(flags, { "spellLevel": spellLevel });
-    effect.updateSource({ "flags.dnd5e": newFlags });
   }
 
   /**
@@ -104,8 +63,7 @@ export class EffectiveTray {
     const effects = message?.getFlag("dnd5e", "use.effects")
       ?.map(id => item?.effects.get(id))
       .filter(e => !e.transfer)
-      .filter(e => e.type === "enchantment");
-      //effect.flags?.dnd5e?.type === "enchantment" || effect.flags?.dnd5e?.rider) 
+      .filter(e => e.type !== "enchantment");
     if (!effects?.length || foundry.utils.isEmpty(effects)) return;
     if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
     const actor = item.parent;
@@ -215,5 +173,50 @@ export class EffectiveTray {
         if (html.querySelector(".card-tray.collapsed")) EffectiveUtils._scroll(mid);
       });
     };
+  }
+
+  // Scroll chat to bottom on ready if any trays have been expanded
+  static async _readyScroll() {
+    await new Promise(r => setTimeout(r, 108));
+    window.ui.chat.scrollBottom({ popout: true });
+  }
+
+  /* -------------------------------------------- */
+  /*  Misc. Methods                               */
+  /* -------------------------------------------- */
+
+  /**
+   * Remove transfer from all effects with duration
+   * @param {Item} item The item from which to remove "transfer": true.
+   */
+  static _removeTransfer(item) {
+    if (!game.settings.get(MODULE, "removeTransfer")) return;
+    const effects = item.effects.contents;
+    if (!effects) return;
+    for (const effect of effects) {
+      const transfer = effect.transfer;
+      const duration = effect.duration;
+      if (transfer && (duration.seconds || duration.turns || duration.rounds)) {
+        effect.updateSource({ "transfer": false });
+      };
+    };
+  }
+
+  /**
+   * Before an effect is created, if it is an enchantment from a spell,
+   * add a flag indicating the level of the spell.
+   * @param {ActiveEffect5e} effect     The effect that will be created.
+   */
+  static async _enchantmentSpellLevel(effect, data, options) {
+    if (!effect.isAppliedEnchantment) return;
+    const msg = game.messages.get(options.chatMessageOrigin);
+    const lvl = msg.flags?.dnd5e?.use?.spellLevel;
+    if (!lvl) return;
+    let spellLevel;
+    if (lvl === 0) spellLevel = 0;
+    else spellLevel = parseInt(lvl) || null;
+    const flags = effect.flags.dnd5e;
+    const newFlags = foundry.utils.mergeObject(flags, { "spellLevel": spellLevel });
+    effect.updateSource({ "flags.dnd5e": newFlags });
   }
 }

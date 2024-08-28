@@ -95,8 +95,8 @@ export class EffectiveUtils {
    */
   static async ownershipCheck(targets) {
     for (const target of targets) {
-      const token = await fromUuid(target.uuid);
-      if (token?.isOwner) return true;
+      const actor = await fromUuid(target.uuid);
+      if (actor?.isOwner) return true;
       else continue;
     };
     return false;

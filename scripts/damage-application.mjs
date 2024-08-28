@@ -124,6 +124,10 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     return li;
   }
 
+  /* -------------------------------------------- */
+  /*  Event Handlers                              */
+  /* -------------------------------------------- */
+
   /**
    * Handle clicking the apply damage button.
    * @param {PointerEvent} event  Triggering click event.

@@ -20,7 +20,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     if (!this.chatMessage) return;
 
     // Build the frame HTML only once
-    if (!this.effects.list || !this.targetList) {
+    if (!this.effectsList || !this.targetList) {
       const div = document.createElement("div");
       div.classList.add("card-tray", "effects-tray", "collapsible");
       if (!this.open) div.classList.add("collapsed");
@@ -105,6 +105,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
    * @param {PointerEvent} event  Triggering click event.
    * @throws {Error}              If the effect could not be applied.
    */
+  /** @override */
   async _onApplyEffect(event) {
     event.preventDefault();
     const effect = this.chatMessage.getAssociatedItem()?.effects.get(event.target.closest("[data-id]")?.dataset.id);

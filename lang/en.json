@@ -19,16 +19,16 @@
     "MultipleConcentrationEffectsSettingName": "Multiple Effects with Concentration",
     "MultipleConcentrationEffectsSettingHint": "Allow multiple effects to be applied from spells with concentration",
     "NoFilter": "No Filter",
-    "NOTIFICATION.NoActiveGMDamage": "There is no active GM. An active GM is required to damage targets you do not own.",
-    "NOTIFICATION.NoActiveGMEffect": "There is no active GM. An active GM is required to create effects on targets you do not own.",
-    "NOTIFICATION.NoTarget": "You don't have a target.",
+    "NOTIFICATION": {
+      "NoActiveGMDamage": "There is no active GM. An active GM is required to damage targets you do not own.",
+      "NoActiveGMEffect": "There is no active GM. An active GM is required to create effects on targets you do not own.",
+      "NoTarget": "You don't have a target."
+    },
     "RemoveTransferSettingName": "Remove 'Apply Effect to Actor'",
     "RemoveTransferSettingHint": "On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
     "ScrollOnExpandSettingName": "Scroll on Expand",
     "ScrollOnExpandSettingHint": "Scroll chat to bottom when expanding a tray that is at the bottom.",
     "SystemDefaultSettingName": "Use Default Effects Tray",
-    "SystemDefaultSettingHint": "Retain default system behavior (if you only want the settings below this one).",
-    "TOOLTIP.EffectsApplyTokens": "Apply to selected or targeted tokens.",
-    "TOOLTIP.EffectsApplyTokensLegacy": "Left click: Apply to selected tokens, Right click: Apply to targets"
+    "SystemDefaultSettingHint": "Retain default system behavior (if you only want the settings below this one)."
   }
 }
