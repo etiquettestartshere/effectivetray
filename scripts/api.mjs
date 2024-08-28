@@ -1,6 +1,5 @@
-import { socketID } from "./const.mjs";
-import { _applyEffects, partitionTargets} from "./effective-tray.mjs";
-import { _scroll } from "./effective-tray.mjs";
+import { SOCKET_ID } from "./const.mjs";
+import { EffectiveUtils } from "./effective-utilities.mjs";
 
 export class API {
 
@@ -8,8 +7,8 @@ export class API {
     globalThis.effectiv = {
       applyEffect: API.applyEffect,
       applyDamage: API.applyDamage,
-      partitionTargets: partitionTargets,
-      scroll: _scroll
+      partitionTargets: EffectiveUtils.partitionTargets,
+      scroll: EffectiveUtils._scroll
     };
   }
 
@@ -49,7 +48,7 @@ export class API {
     let owned;
     let toTarget;
     if (targets instanceof Set) {
-      [owned, toTarget] = partitionTargets(Array.from(targets));
+      [owned, toTarget] = EffectiveUtils.partitionTargets(Array.from(targets));
     }
 
     // Handle a single Uuid
@@ -60,7 +59,7 @@ export class API {
 
     // Handle an array of Tokens
     else if (targets.at(0) instanceof Token) {
-      [owned, toTarget] = partitionTargets(targets);
+      [owned, toTarget] = EffectiveUtils.partitionTargets(targets);
     } 
     else {
 
@@ -84,17 +83,17 @@ export class API {
     if (!foundry.utils.isEmpty(owned)) {
       const actors = new Set();
       for (const token of owned) if (token.actor ?? token) actors.add(token.actor ?? token);
-      for (const actor of actors) await _applyEffects(actor, effect, {effectData, concentration});
+      for (const actor of actors) await EffectiveUtils.applyEffectToActor(actor, effect, { effectData, concentration });//_applyEffects(actor, effect, {effectData, concentration});
     };
 
     // Ask the GM client to apply the rest
     if (foundry.utils.isEmpty(toTarget)) return;
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
 
-    await game.socket.emit(socketID, { 
+    await game.socket.emit(SOCKET_ID, { 
       type: "effect",
       data: { 
-        origin: toApply,
+        source: toApply,
         targets: toTarget,
         effectData: effectData,
         con: concentration,
@@ -111,6 +110,6 @@ export class API {
 
   static async applyDamage(damage = [], opts = {}, id) {
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
-    await game.socket.emit(socketID, { type: "damage", data: { id, opts, damage } });
+    await game.socket.emit(SOCKET_ID, { type: "damage", data: { id, opts, damage } });
   }
 }

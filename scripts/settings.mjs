@@ -1,9 +1,9 @@
 import { MODULE } from "./const.mjs";
 
-export class moduleSettings {
+export class ModuleSettings {
 
   static init() {
-    moduleSettings._chatSettings();
+    ModuleSettings._chatSettings();
   }
 
   static _chatSettings() {
@@ -11,17 +11,6 @@ export class moduleSettings {
       name: "EFFECTIVETRAY.AllowTargetSettingName",
       hint: "EFFECTIVETRAY.AllowTargetSettingHint",
       scope: "world",
-      config: true,
-      type: Boolean,
-      default: true,
-      requiresReload: true,
-      onChange: false
-    });
-
-    game.settings.register(MODULE, "contextTarget", {
-      name: "EFFECTIVETRAY.ContextTargetSettingName",
-      hint: "EFFECTIVETRAY.ContextTargetSettingHint",
-      scope: "client",
       config: true,
       type: Boolean,
       default: true,

@@ -1,22 +1,5 @@
-import { MODULE, socketID } from "./const.mjs";
-
-/* -------------------------------------------- */
-/*  Functions                                   */
-/* -------------------------------------------- */
-
-/**
- * Check targets for ownership when determining which target selection mode to use.
- * @param {Array} targets  Array of objects with target data, including UUID.
- * @returns {boolean}
- */
-async function ownershipCheck(targets) {
-  for (const target of targets) {
-    const token = await fromUuid(target.uuid);
-    if (token?.isOwner) return true;
-    else continue;
-  };
-  return false;
-}
+import { MODULE, SOCKET_ID } from "./const.mjs";
+import { EffectiveUtils } from "./effective-utilities.mjs";
 
 /* -------------------------------------------- */
 /*  Damage Application Extension (from dnd5e)   */
@@ -27,9 +10,10 @@ const MULTIPLIERS = [[-1, "-1"], [0, "0"], [.25, "¼"], [.5, "½"], [1, "1"], [2
 
 export default class EffectiveDAE extends dnd5e.applications.components.DamageApplicationElement {
 
-  /**
-   * Determine which target selection mode to use based on damageTarget setting state.
-   */
+  /* -------------------------------------------- */
+  /*  Rendering                                   */
+  /* -------------------------------------------- */
+
   /** @override */
   async connectedCallback() {
     // Fetch the associated chat message
@@ -50,15 +34,6 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         </label>
         <div class="collapsible-content">
           <div class="wrapper">
-            <div class="target-source-control">
-              <button type="button" class="unbutton" data-mode="targeted" aria-pressed="false">
-                <i class="fa-solid fa-bullseye" inert></i> ${game.i18n.localize("DND5E.Tokens.Targeted")}
-              </button>
-              <button type="button" class="unbutton" data-mode="selected" aria-pressed="false">
-                <i class="fa-solid fa-expand" inert></i> ${game.i18n.localize("DND5E.Tokens.Selected")}
-              </button>
-            </div>
-            <ul class="targets unlist"></ul>
             <button class="apply-damage" type="button" data-action="applyDamage">
               <i class="fa-solid fa-reply-all fa-flip-horizontal" inert></i>
               ${game.i18n.localize("DND5E.Apply")}
@@ -69,34 +44,28 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       this.replaceChildren(div);
       this.applyButton = div.querySelector(".apply-damage");
       this.applyButton.addEventListener("click", this._onApplyDamage.bind(this));
-      this.targetList = div.querySelector(".targets");
-      this.targetSourceControl = this.querySelector(".target-source-control");
-      this.targetSourceControl.querySelectorAll("button").forEach(b =>
-        b.addEventListener("click", this._onChangeTargetMode.bind(this))
-      );
-      if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
-      if (!game.settings.get(MODULE, "damageTarget")) {
-        const targets = this.chatMessage.getFlag("dnd5e", "targets");
-        if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
-      };
+      div.querySelector(".wrapper").prepend(...this.buildTargetContainer());
       div.addEventListener("click", this._handleClickHeader.bind(this));
+    }
+
+    // Override to hide target selection if there are no targets
+    if (!game.settings.get(MODULE, "damageTarget")) {
+      const targets = this.chatMessage.getFlag("dnd5e", "targets");
+      if (!await EffectiveUtils.ownershipCheck(targets)) this.targetSourceControl.hidden = true;
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
   }
 
-  /**
-   * Create a list entry for a single target.
-   * @param {string} uuid  UUID of the token represented by this entry.
-   * Extends this method to remove checking for token owner.
-   */
   /** @override */
-  buildTargetListEntry(uuid) {
-    const token = fromUuidSync(uuid);
+  buildTargetListEntry({ uuid, name }) {
+
+    // Override checking isOwner
+    const actor = fromUuidSync(uuid);
 
     // Calculate damage to apply
     const targetOptions = this.getTargetOptions(uuid);
-    const { temp, total, active } = this.calculateDamage(token, targetOptions);
+    const { temp, total, active } = this.calculateDamage(actor, targetOptions);
 
     const types = [];
     for (const [change, values] of Object.entries(active)) {
@@ -124,9 +93,9 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     li.classList.add("target");
     li.dataset.targetUuid = uuid;
     li.innerHTML = `
-      <img class="gold-icon" alt="${token.name}" src="${token.img}">
+      <img class="gold-icon" alt="${name}" src="${actor.img}">
       <div class="name-stacked">
-        <span class="title">${token.name}</span>
+        <span class="title">${name}</span>
         ${changeSources ? `<span class="subtitle">${changeSources}</span>` : ""}
       </div>
       <div class="calculated damage">
@@ -149,7 +118,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       menu.append(entry);
     }
 
-    this.refreshListEntry(token, li, targetOptions);
+    this.refreshListEntry(actor, li, targetOptions);
     li.addEventListener("click", this._onChangeOptions.bind(this));
 
     return li;
@@ -173,7 +142,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       }
       else {
 
-        // Convert damage properties to an Array for socket emission
+        // Override to convert damage properties to an Array for socket emission
         if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
         const damage = [];
         foundry.utils.deepClone(this.damages).forEach(d => {
@@ -186,7 +155,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         if (opts?.ignore?.resistance) foundry.utils.mergeObject(opts, { "ignore.resistance": Array.from(opts.ignore.resistance) });
         if (opts?.ignore?.vulnerability) foundry.utils.mergeObject(opts, { "ignore.vulnerability": Array.from(opts.ignore.vulnerability) });
         if (opts?.ignore?.modification) foundry.utils.mergeObject(opts, { "ignore.modification": Array.from(opts.ignore.modification) });
-        await game.socket.emit(socketID, { type: "damage", data: { id, opts, damage } });
+        await game.socket.emit(SOCKET_ID, { type: "damage", data: { id, opts, damage } });
       };
     }
     this.open = false;

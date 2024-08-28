@@ -18,6 +18,9 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
 - **Multiple Effects with Concentration**: Allow multiple effects to be applied from spells with concentration (off by default).
 
+## Additional Features
+- Flags enchantment effects with their spellLevel
+
 ## API
 Now includes three helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect`, `effectiv.applyDamage` and `effective.partitionTargets`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
 
