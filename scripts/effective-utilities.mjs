@@ -93,9 +93,9 @@ export class EffectiveUtils {
    * @param {Array} targets  Array of objects with target data, including UUID.
    * @returns {boolean}
    */
-  static async ownershipCheck(targets) {
+  static ownershipCheck(targets) {
     for (const target of targets) {
-      const actor = await fromUuid(target.uuid);
+      const actor = fromUuidSync(target.uuid);
       if (actor?.isOwner) return true;
       else continue;
     };

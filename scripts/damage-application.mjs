@@ -15,7 +15,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
   /* -------------------------------------------- */
 
   /** @override */
-  async connectedCallback() {
+  connectedCallback() {
     // Fetch the associated chat message
     const messageId = this.closest("[data-message-id]")?.dataset.messageId;
     this.chatMessage = game.messages.get(messageId);
@@ -51,7 +51,8 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     // Override to hide target selection if there are no targets
     if (!game.settings.get(MODULE, "damageTarget")) {
       const targets = this.chatMessage.getFlag("dnd5e", "targets");
-      if (!await EffectiveUtils.ownershipCheck(targets)) this.targetSourceControl.hidden = true;
+      const ownership = EffectiveUtils.ownershipCheck(targets);
+      if (!ownership) this.targetSourceControl.hidden = true;
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
@@ -62,6 +63,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
 
     // Override checking isOwner
     const actor = fromUuidSync(uuid);
+    if (!game.settings.get(MODULE, "damageTarget") && (!actor?.isOwner)) return;
 
     // Calculate damage to apply
     const targetOptions = this.getTargetOptions(uuid);
