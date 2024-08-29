@@ -9,9 +9,9 @@ import { MODULE, socketID } from "./const.mjs";
  * @param {Array} targets  Array of objects with target data, including UUID.
  * @returns {boolean}
  */
-async function ownershipCheck(targets) {
+function ownershipCheck(targets) {
   for (const target of targets) {
-    const token = await fromUuid(target.uuid);
+    const token = fromUuidSync(target.uuid);
     if (token?.isOwner) return true;
     else continue;
   };
@@ -31,7 +31,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
    * Determine which target selection mode to use based on damageTarget setting state.
    */
   /** @override */
-  async connectedCallback() {
+  connectedCallback() {
     // Fetch the associated chat message
     const messageId = this.closest("[data-message-id]")?.dataset.messageId;
     this.chatMessage = game.messages.get(messageId);
@@ -77,7 +77,8 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
       if (!game.settings.get(MODULE, "damageTarget")) {
         const targets = this.chatMessage.getFlag("dnd5e", "targets");
-        if (!await ownershipCheck(targets)) this.targetSourceControl.hidden = true;
+        const ownership = ownershipCheck(targets);
+        if (!ownership) this.targetSourceControl.hidden = true;
       };
       div.addEventListener("click", this._handleClickHeader.bind(this));
     }
@@ -92,7 +93,10 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
    */
   /** @override */
   buildTargetListEntry(uuid) {
+
+    // Override checking isOwner
     const token = fromUuidSync(uuid);
+    if (!game.settings.get(MODULE, "damageTarget") && (!token?.isOwner)) return;
 
     // Calculate damage to apply
     const targetOptions = this.getTargetOptions(uuid);
