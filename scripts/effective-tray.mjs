@@ -38,7 +38,7 @@ export class effectiveTray {
 
   // Scroll chat to bottom on ready if any trays have been expanded
   static async _readyScroll() {
-    await new Promise(r => setTimeout(r, 108));
+    await new Promise(r => setTimeout(r, 10));
     window.ui.chat.scrollBottom({ popout: true });
   }
 
@@ -215,7 +215,7 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', async () => {
+        button.addEventListener('click', async function() {
           if (!tray.querySelector(".et-uncollapsed")) {
             await tray.classList.add("et-uncollapsed");
             await tray.classList.remove("collapsed");
@@ -226,7 +226,7 @@ export class effectiveTray {
   }
 
   // Handle effects tray collapse behavior for default trays with don't close on submit
-  static _effectCollapse(message, html) {
+  static async _effectCollapse(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
@@ -235,9 +235,9 @@ export class effectiveTray {
       else tray.classList.remove("et-uncollapsed");
     });
     for (const button of buttons) {
-      button.addEventListener('click', () => {
-        tray.classList.add("collapsed");
-        tray.classList.remove("et-uncollapsed");
+      button.addEventListener('click', async function() {
+        await tray.classList.add("collapsed");
+        await tray.classList.remove("et-uncollapsed");
       });
     };
   }
@@ -313,7 +313,7 @@ export class effectiveDamage {
 
   // Handle damage tray collapse behavior
   static async _damageCollapse(message, html) {
-    await new Promise(r => setTimeout(r, 108));
+    await new Promise(r => setTimeout(r, 10));
     const tray = html.querySelector('.damage-tray');
     if (!tray) return;
     const button = tray.querySelector("button.apply-damage");
@@ -328,10 +328,13 @@ export class effectiveDamage {
       };
     });
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
-    upper.addEventListener('click', () => {
+    const damageEl = html.querySelector('effective-damage-application, damage-application');
+    upper.addEventListener('click', async function() {
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
-        tray.classList.toggle("et-uncollapsed");
-        tray.classList.remove("collapsed");
+        await tray.classList.toggle("et-uncollapsed");
+        await tray.classList.toggle("collapsed");
+        damageEl.open = !damageEl.open;
+
       };
     });
   }
@@ -339,7 +342,7 @@ export class effectiveDamage {
   // Check and see if the damage tray needs to be scrolled
   static async _scrollDamageTray(message, html) {
     if (!game.settings.get(MODULE, "scrollOnExpand")) return;
-    await new Promise(r => setTimeout(r, 112));
+    await new Promise(r => setTimeout(r, 10));
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     if (upper) {
       const mid = message.id;
