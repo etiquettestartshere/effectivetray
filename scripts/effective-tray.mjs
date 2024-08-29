@@ -60,10 +60,13 @@ export class EffectiveTray {
     await new Promise(r => setTimeout(r, 108));
     const item = message.getAssociatedItem();
     if (!item) return;
-    const effects = message?.getFlag("dnd5e", "use.effects")
-      ?.map(id => item?.effects.get(id))
-      .filter(e => !e.transfer)
-      .filter(e => e.type !== "enchantment");
+    let effects;
+    if (this.getFlag("dnd5e", "type") === "usage") {
+      effects = message?.getFlag("dnd5e", "use.effects")?.map(id => item?.effects.get(id))
+    } else {
+      effects = item?.effects.filter(e => (e.type !== "enchantment") && !e.getFlag("dnd5e", "rider"));
+    } 
+    effects = effects?.filter(e => !e.transfer);
     if (!effects?.length || foundry.utils.isEmpty(effects)) return;
     if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
     const actor = item.parent;
