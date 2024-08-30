@@ -329,10 +329,10 @@ export class effectiveDamage {
     });
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     const damageEl = html.querySelector('effective-damage-application, damage-application');
-    upper.addEventListener('click', async function() {
+    upper.addEventListener('click', () => {
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
-        await tray.classList.toggle("et-uncollapsed");
-        await tray.classList.toggle("collapsed");
+        tray.classList.toggle("et-uncollapsed");
+        tray.classList.toggle("collapsed");
         damageEl.open = !damageEl.open;
 
       };
