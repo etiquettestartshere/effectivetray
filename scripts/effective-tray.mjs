@@ -3,6 +3,7 @@ import { MODULE, socketID } from "./const.mjs";
 /* -------------------------------------------- */
 /*  Effects Handling                            */
 /* -------------------------------------------- */
+
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
@@ -134,7 +135,12 @@ export class effectiveTray {
             <span class="title">${effect.name}</span>
             <span class="subtitle">${label}</span>
           </div>
-          <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="${tooltip}" aria-label="Apply to selected tokens">
+          <button 
+            type="button" 
+            class="apply-${effect.name.slugify().toLowerCase()}" 
+            data-tooltip="${tooltip}" 
+            aria-label="Apply to selected tokens"
+          >
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
         </li>
@@ -142,27 +148,30 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async () => {
-        const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
-        if (!mode || mode === "selected") {
-          const actors = new Set();
-          for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
-          _checkTray(tray);
-          for (const actor of actors) {
-            await _applyEffects(actor, effect, { effectData, concentration });
+      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
+        .addEventListener('click', async () => {
+          const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
+          if (!mode || mode === "selected") {
+            const actors = new Set();
+            for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
+            _checkTray(tray);
+            for (const actor of actors) {
+              await _applyEffects(actor, effect, { effectData, concentration });
+            };
+          } else {
+            _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
           };
-        } else {
-          _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
-        };
-      });
+        });
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function (event) {
-          event.stopPropagation();
-          event.preventDefault();
-          _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
-        });
+        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
+          .addEventListener('contextmenu', async function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
+          }
+        );
       };
     };
 
@@ -182,7 +191,9 @@ export class effectiveTray {
       };
       if (!html.querySelector(".effects-tray.collapsed")) {
         tray.classList.add("collapsed");
-      } else if (html.querySelector(".effects-tray.collapsed")) tray.classList.remove("collapsed");
+      } else if (html.querySelector(".effects-tray.collapsed")) {
+        tray.classList.remove("collapsed");
+      }
       if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
     });
 
@@ -215,10 +226,10 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', async function() {
+        button.addEventListener('click', () => {
           if (!tray.querySelector(".et-uncollapsed")) {
-            await tray.classList.add("et-uncollapsed");
-            await tray.classList.remove("collapsed");
+            tray.classList.add("et-uncollapsed");
+            tray.classList.remove("collapsed");
           };
         });
       };
@@ -231,13 +242,14 @@ export class effectiveTray {
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
     tray.addEventListener('click', () => {
-      if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
-      else tray.classList.remove("et-uncollapsed");
+      if (html.querySelector(".effects-tray.collapsed")) { 
+        tray.classList.add("et-uncollapsed");
+      } else tray.classList.remove("et-uncollapsed");
     });
     for (const button of buttons) {
-      button.addEventListener('click', async function() {
-        await tray.classList.add("collapsed");
-        await tray.classList.remove("et-uncollapsed");
+      button.addEventListener('click', () => {
+        tray.classList.add("collapsed");
+        tray.classList.remove("et-uncollapsed");
       });
     };
   }
@@ -258,6 +270,7 @@ export class effectiveTray {
 /* -------------------------------------------- */
 /*  Damage Handling                             */
 /* -------------------------------------------- */
+
 export class effectiveDamage {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageCollapse);
@@ -280,7 +293,9 @@ export class effectiveDamage {
         if (message.whisper.length && !message.whisper.includes(game.user.id)) return;
         const damageApplication = document.createElement("effective-damage-application");
         damageApplication.classList.add("dnd5e2");
-        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
+        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, {
+          respectProperties: true
+        }).map(roll => ({
           value: roll.total,
           type: roll.options.type,
           properties: new Set(roll.options.properties ?? [])
@@ -291,10 +306,10 @@ export class effectiveDamage {
   }
 
   /**
- * Adapted from dnd5e
- * Handle collapsing or expanding trays depending on user settings.
- * @param {HTMLElement} html  Rendered contents of the message.
- */
+   * Adapted from dnd5e
+   * Handle collapsing or expanding trays depending on user settings.
+   * @param {HTMLElement} html  Rendered contents of the message.
+   */
   static async _collapseTrays(message, html) {
     let collapse;
     switch (game.settings.get("dnd5e", "autoCollapseChatTrays")) {
