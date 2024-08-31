@@ -1,5 +1,5 @@
 import { MODULE, SOCKET_ID } from "./const.mjs";
-import { EffectiveUtils } from "./effective-utilities.mjs";
+import { EffectiveTray } from "./effective-tray.mjs";
 
 /* -------------------------------------------- */
 /*  Damage Application Extension (from dnd5e)   */
@@ -46,13 +46,13 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       this.applyButton.addEventListener("click", this._onApplyDamage.bind(this));
       div.querySelector(".wrapper").prepend(...this.buildTargetContainer());
       div.addEventListener("click", this._handleClickHeader.bind(this));
-    }
 
-    // Override to hide target selection if there are no targets
-    if (!game.settings.get(MODULE, "damageTarget")) {
-      const targets = this.chatMessage.getFlag("dnd5e", "targets");
-      const ownership = EffectiveUtils.ownershipCheck(targets);
-      if (!ownership) this.targetSourceControl.hidden = true;
+      // Override to hide target selection if there are no targets
+      if (!game.settings.get(MODULE, "damageTarget")) {
+        const targets = this.chatMessage.getFlag("dnd5e", "targets");
+        const ownership = EffectiveTray.ownershipCheck(targets);
+        if (!ownership) this.targetSourceControl.hidden = true;
+      };
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
@@ -63,7 +63,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
 
     // Override checking isOwner
     const actor = fromUuidSync(uuid);
-    if (!game.settings.get(MODULE, "damageTarget") && (!actor?.isOwner)) return;
+    if (!game.settings.get(MODULE, "damageTarget") && !actor?.isOwner) return;
 
     // Calculate damage to apply
     const targetOptions = this.getTargetOptions(uuid);
@@ -149,6 +149,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       else {
 
         // Override to convert damage properties to an Array for socket emission
+        if (!game.settings.get(MODULE, 'damageTarget')) return;
         if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
         const damage = [];
         foundry.utils.deepClone(this.damages).forEach(d => {

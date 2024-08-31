@@ -1,5 +1,5 @@
 import { SOCKET_ID } from "./const.mjs";
-import { EffectiveUtils } from "./effective-utilities.mjs";
+import { EffectiveTray } from "./effective-tray.mjs";
 
 export class API {
 
@@ -7,8 +7,8 @@ export class API {
     globalThis.effectiv = {
       applyEffect: API.applyEffect,
       applyDamage: API.applyDamage,
-      partitionTargets: EffectiveUtils.partitionTargets,
-      scroll: EffectiveUtils._scroll
+      partitionTargets: EffectiveTray.partitionTargets,
+      scroll: EffectiveTray._scroll
     };
   }
 
@@ -48,7 +48,7 @@ export class API {
     let owned;
     let toTarget;
     if (targets instanceof Set) {
-      [owned, toTarget] = EffectiveUtils.partitionTargets(Array.from(targets));
+      [owned, toTarget] = EffectiveTray.partitionTargets(Array.from(targets));
     }
 
     // Handle a single Uuid
@@ -59,7 +59,7 @@ export class API {
 
     // Handle an array of Tokens
     else if (targets.at(0) instanceof Token) {
-      [owned, toTarget] = EffectiveUtils.partitionTargets(targets);
+      [owned, toTarget] = EffectiveTray.partitionTargets(targets);
     } 
     else {
 
@@ -83,7 +83,7 @@ export class API {
     if (!foundry.utils.isEmpty(owned)) {
       const actors = new Set();
       for (const token of owned) if (token.actor ?? token) actors.add(token.actor ?? token);
-      for (const actor of actors) await EffectiveUtils.applyEffectToActor(actor, effect, { effectData, concentration });//_applyEffects(actor, effect, {effectData, concentration});
+      for (const actor of actors) await EffectiveTray.applyEffectToActor(actor, effect, { effectData, concentration });//_applyEffects(actor, effect, {effectData, concentration});
     };
 
     // Ask the GM client to apply the rest

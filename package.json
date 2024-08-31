@@ -1,0 +1,23 @@
+{
+  "name": "effectivetray",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etiquettestartshere/effectivetray.git"
+  },
+  "keywords": [
+    "fvtt",
+    "module"
+  ],
+  "author": "alakshana",
+  "bugs": {
+    "url": "https://github.com/etiquettestartshere/effectivetray"
+  },
+  "homepage": "https://github.com/etiquettestartshere/effectivetray",
+  "devDependencies": {
+    "rollup": "^4.21.1"
+  }
+}

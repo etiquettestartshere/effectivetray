@@ -1,5 +1,5 @@
 import { MODULE, SOCKET_ID } from "./const.mjs";
-import { EffectiveUtils } from "./effective-utilities.mjs";
+import { EffectiveTray } from "./effective-tray.mjs";
 
 /* -------------------------------------------- */
 /*  Effect Application Extension (from dnd5e)   */
@@ -43,14 +43,14 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
       div.querySelector(".wrapper").prepend(...this.buildTargetContainer());
       this.targetList.addEventListener("change", this._onCheckTarget.bind(this));
       div.addEventListener("click", this._handleClickHeader.bind(this));
-    }
 
-    // Override to hide target selection if there are no targets
-    if (!game.settings.get(MODULE, "allowTarget") && !game.user.isGM) {
-      const targets = this.chatMessage.getFlag("dnd5e", "targets");
-      const ownership = EffectiveUtils.ownershipCheck(targets);
-      if (!ownership) this.targetSourceControl.hidden = true;
-    };
+      // Override to hide target selection if there are no targets
+      if (!game.settings.get(MODULE, "allowTarget") && !game.user.isGM) {
+        const targets = this.chatMessage.getFlag("dnd5e", "targets");
+        const ownership = EffectiveTray.ownershipCheck(targets);
+        if (!ownership) this.targetSourceControl.hidden = true;
+      };
+    }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
   }
@@ -62,6 +62,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
 
     // Override checking isOwner
     const actor = fromUuidSync(uuid);
+    if (!game.settings.get(MODULE, "allowTarget") && !actor?.isOwner) return;
 
     const disabled = this.targetingMode === "selected" ? " disabled" : "";
     const checked = this.targetChecked(uuid) ? " checked" : "";
@@ -95,7 +96,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
    */
   /** @override */
   async _applyEffectToActor(effect, actor, { effectData, concentration }) {
-    const applied = EffectiveUtils.applyEffectToActor(effect, actor, {effectData, concentration });
+    const applied = EffectiveTray.applyEffectToActor(effect, actor, {effectData, concentration });
     return applied;
   }
 
@@ -114,7 +115,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     
     // Override to handle tray collapse behavior
     const tray = event.target.closest('.effects-tray');
-    EffectiveUtils._checkTray(tray);
+    EffectiveTray._checkTray(tray);
 
     // Override to accomodate helper params
     let effectData, concentration = null;
@@ -135,6 +136,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
       try {
         if (actor.isOwner) await this._applyEffectToActor(effect, actor, { effectData, concentration });
         else {
+          if (!game.settings.get(MODULE, 'allowTarget')) return;
           if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
           const source = effect.uuid;
           const con = concentration?.id;

@@ -1,5 +1,5 @@
 import { SOCKET_ID } from "./const.mjs";
-import { EffectiveUtils } from "./effective-utilities.mjs";
+import { EffectiveTray } from "./effective-tray.mjs";
 
 /* -------------------------------------------- */
 /*  Socket Handling                             */
@@ -23,7 +23,10 @@ export class EffectiveSocket {
     });
   }
 
-  // Make the GM client apply effects to the requested targets
+  /**
+   * Make the GM client apply effects to the requested targets.
+   * @param {object} request The information passed via socket to be handled by the GM client.
+   */
   static async _effectSocket(request) {
     if (game.user !== game.users.activeGM) return;
     const targets = request.data.targets;
@@ -39,11 +42,14 @@ export class EffectiveSocket {
       if (target) actors.add(targetActor);
     };
     for (const actor of actors) {
-      await EffectiveUtils.applyEffectToActor(effect, actor, { effectData, concentration });
+      await EffectiveTray.applyEffectToActor(effect, actor, { effectData, concentration });
     };
   }
 
-  // Make the GM client apply damage to the requested targets
+  /**
+   * Make the GM client apply damage to the requested targets
+   * @param {object} request The information passed via socket to be handled by the GM client.
+   */
   static async _damageSocket(request) {
     if (game.user !== game.users.activeGM) return;
     const id = request.data.id;
@@ -60,6 +66,6 @@ export class EffectiveSocket {
     if (opts?.ignore?.resistance) foundry.utils.mergeObject(opts, { "ignore.resistance": new Set(opts.ignore.resistance) });
     if (opts?.ignore?.vulnerability) foundry.utils.mergeObject(opts, { "ignore.vulnerability": new Set(opts.ignore.vulnerability) });
     if (opts?.ignore?.modification) foundry.utils.mergeObject(opts, { "ignore.modification": new Set(opts.ignore.modification) });
-    return await EffectiveUtils._applyTargetDamage(id, opts, damage);
+    return await EffectiveTray.applyTargetDamage(id, opts, damage);
   }
 }
