@@ -293,9 +293,7 @@ export class effectiveDamage {
         if (message.whisper.length && !message.whisper.includes(game.user.id)) return;
         const damageApplication = document.createElement("effective-damage-application");
         damageApplication.classList.add("dnd5e2");
-        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, {
-          respectProperties: true
-        }).map(roll => ({
+        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
           value: roll.total,
           type: roll.options.type,
           properties: new Set(roll.options.properties ?? [])
@@ -459,6 +457,7 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
     for (const actor of actors) {
       await _applyEffects(actor, effect, { effectData, concentration });
     };
+    if (!game.settings.get(MODULE, 'allowTarget')) return;
     if (!targets.length) return;
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
     const origin = effect.uuid;

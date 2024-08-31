@@ -181,6 +181,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       else {
 
         // Convert damage properties to an Array for socket emission
+        if (!game.settings.get(MODULE, 'damageTarget')) return;
         if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
         const damage = [];
         foundry.utils.deepClone(this.damages).forEach(d => {
