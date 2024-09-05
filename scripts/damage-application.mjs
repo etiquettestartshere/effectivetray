@@ -75,11 +75,14 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
         b.addEventListener("click", this._onChangeTargetMode.bind(this))
       );
       if (!this.chatMessage.getFlag("dnd5e", "targets")?.length) this.targetSourceControl.hidden = true;
+
+      // Override to hide target selection if there are no targets
       if (!game.settings.get(MODULE, "damageTarget")) {
         const targets = this.chatMessage.getFlag("dnd5e", "targets");
         const ownership = ownershipCheck(targets);
         if (!ownership) this.targetSourceControl.hidden = true;
       };
+
       div.addEventListener("click", this._handleClickHeader.bind(this));
     }
 
@@ -178,6 +181,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
       else {
 
         // Convert damage properties to an Array for socket emission
+        if (!game.settings.get(MODULE, 'damageTarget')) return;
         if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMDamage"));
         const damage = [];
         foundry.utils.deepClone(this.damages).forEach(d => {

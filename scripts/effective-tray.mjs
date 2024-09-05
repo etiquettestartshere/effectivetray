@@ -3,6 +3,7 @@ import { MODULE, socketID } from "./const.mjs";
 /* -------------------------------------------- */
 /*  Effects Handling                            */
 /* -------------------------------------------- */
+
 export class effectiveTray {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveTray._scrollEffectsTray);
@@ -86,27 +87,28 @@ export class effectiveTray {
   static async _effectTray(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
-    const uuid = foundry.utils.getProperty(message, "flags.dnd5e.use.itemUuid");
-    if (!uuid) return;
-    const item = await fromUuid(uuid);
+    const item = message.getAssociatedItem();
+    if (!item) return;
     const effects = item?.effects?.contents;
     if (foundry.utils.isEmpty(effects)) return;
     if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
-    const actor = item.parent;
+    const actor = message.getAssociatedActor();
 
     // Handle filtering
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
     const filterDis = game.settings.get(MODULE, "filterDisposition");
     if (filterDis) {
       const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
-      if (token && filterDis === 3 && token.disposition <= 0 && !token?.isOwner) return;
-      else if (token && filterDis === 2 && token.disposition <= -1 && !token?.isOwner) return;
-      else if (token && filterDis === 1 && token.disposition <= -2 && !token?.isOwner) return;
+      if (token && filterDis === 3 && token.disposition <= CONST.TOKEN_DISPOSITIONS.NEUTRAL && !token?.isOwner) return;
+      else if (token && filterDis === 2 && token.disposition <= CONST.TOKEN_DISPOSITIONS.HOSTILE && !token?.isOwner) return;
+      else if (token && filterDis === 1 && token.disposition <= CONST.TOKEN_DISPOSITIONS.SECRET && !token?.isOwner) return;
     }
     const filterPer = game.settings.get(MODULE, "filterPermission");
     if (filterPer) {
       if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
       else if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+      else if (filterPer === 3 && !actor?.isOwner) return;
+      else if (filterPer === 4 && !game.user.isGM) return;
     }
 
     // Replace the effects in the tray
@@ -128,13 +130,18 @@ export class effectiveTray {
       if (effect.transfer === true) continue;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
-        <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
+        <li class="effect" data-uuid=${item.uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
           <img class="gold-icon" alt=${effect.name} src=${effect.img}>
           <div class="name-stacked">
             <span class="title">${effect.name}</span>
             <span class="subtitle">${label}</span>
           </div>
-          <button type="button" class="apply-${effect.name.slugify().toLowerCase()}" data-tooltip="${tooltip}" aria-label="Apply to selected tokens">
+          <button 
+            type="button" 
+            class="apply-${effect.name.slugify().toLowerCase()}" 
+            data-tooltip="${tooltip}" 
+            aria-label="Apply to selected tokens"
+          >
             <i class="fas fa-reply-all fa-flip-horizontal"></i>
           </button>
         </li>
@@ -142,27 +149,30 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('click', async () => {
-        const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
-        if (!mode || mode === "selected") {
-          const actors = new Set();
-          for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
-          _checkTray(tray);
-          for (const actor of actors) {
-            await _applyEffects(actor, effect, { effectData, concentration });
+      tray.querySelector(`li[data-uuid="${item.uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
+        .addEventListener('click', async () => {
+          const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
+          if (!mode || mode === "selected") {
+            const actors = new Set();
+            for (const token of canvas.tokens.controlled) if (token.actor) actors.add(token.actor);
+            _checkTray(tray);
+            for (const actor of actors) {
+              await _applyEffects(actor, effect, { effectData, concentration });
+            };
+          } else {
+            _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
           };
-        } else {
-          _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
-        };
-      });
+        });
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button").addEventListener('contextmenu', async function (event) {
-          event.stopPropagation();
-          event.preventDefault();
-          _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
-        });
+        tray.querySelector(`li[data-uuid="${item.uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
+          .addEventListener('contextmenu', async function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            _effectApplicationHandler(tray, effect, { effectData, concentration, caster });
+          }
+        );
       };
     };
 
@@ -182,7 +192,9 @@ export class effectiveTray {
       };
       if (!html.querySelector(".effects-tray.collapsed")) {
         tray.classList.add("collapsed");
-      } else if (html.querySelector(".effects-tray.collapsed")) tray.classList.remove("collapsed");
+      } else if (html.querySelector(".effects-tray.collapsed")) {
+        tray.classList.remove("collapsed");
+      }
       if (game.settings.get(MODULE, "scrollOnExpand")) _scroll(mid);
     });
 
@@ -215,10 +227,10 @@ export class effectiveTray {
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       const buttons = tray.querySelectorAll("button");
       for (const button of buttons) {
-        button.addEventListener('click', async function() {
+        button.addEventListener('click', () => {
           if (!tray.querySelector(".et-uncollapsed")) {
-            await tray.classList.add("et-uncollapsed");
-            await tray.classList.remove("collapsed");
+            tray.classList.add("et-uncollapsed");
+            tray.classList.remove("collapsed");
           };
         });
       };
@@ -231,13 +243,14 @@ export class effectiveTray {
     if (!tray) return;
     const buttons = tray.querySelectorAll("button");
     tray.addEventListener('click', () => {
-      if (html.querySelector(".effects-tray.collapsed")) tray.classList.add("et-uncollapsed");
-      else tray.classList.remove("et-uncollapsed");
+      if (html.querySelector(".effects-tray.collapsed")) { 
+        tray.classList.add("et-uncollapsed");
+      } else tray.classList.remove("et-uncollapsed");
     });
     for (const button of buttons) {
-      button.addEventListener('click', async function() {
-        await tray.classList.add("collapsed");
-        await tray.classList.remove("et-uncollapsed");
+      button.addEventListener('click', () => {
+        tray.classList.add("collapsed");
+        tray.classList.remove("et-uncollapsed");
       });
     };
   }
@@ -258,6 +271,7 @@ export class effectiveTray {
 /* -------------------------------------------- */
 /*  Damage Handling                             */
 /* -------------------------------------------- */
+
 export class effectiveDamage {
   static init() {
     Hooks.on("dnd5e.renderChatMessage", effectiveDamage._damageCollapse);
@@ -291,10 +305,10 @@ export class effectiveDamage {
   }
 
   /**
- * Adapted from dnd5e
- * Handle collapsing or expanding trays depending on user settings.
- * @param {HTMLElement} html  Rendered contents of the message.
- */
+   * Adapted from dnd5e
+   * Handle collapsing or expanding trays depending on user settings.
+   * @param {HTMLElement} html  Rendered contents of the message.
+   */
   static async _collapseTrays(message, html) {
     let collapse;
     switch (game.settings.get("dnd5e", "autoCollapseChatTrays")) {
@@ -329,12 +343,11 @@ export class effectiveDamage {
     });
     const upper = html.querySelector('.damage-tray')?.querySelector(".roboto-upper");
     const damageEl = html.querySelector('effective-damage-application, damage-application');
-    upper.addEventListener('click', async function() {
+    upper.addEventListener('click', () => {
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
-        await tray.classList.toggle("et-uncollapsed");
-        await tray.classList.toggle("collapsed");
-        damageEl.open = !damageEl.open;
-
+        tray.classList.toggle("et-uncollapsed");
+        tray.classList.toggle("collapsed");
+        damageEl.toggleAttribute("open");
       };
     });
   }
@@ -423,9 +436,10 @@ async function _damageSocket(request) {
  * Handle applying effects to targets: handle it if you can handle it, else make a request via socket
  * @param {HTMLElement} tray             HTML element that composes the collapsible tray.
  * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
- * @param {string} caster                The Uuid of the actor which originally cast the spell requiring concentration.
+ * @param {object} [options]             Additional data that may be included with the effect.
+ * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {string} [options.caster]                The Uuid of the actor which originally cast the spell requiring concentration.
  */
 async function _effectApplicationHandler(tray, effect, { effectData, concentration, caster }) {
   if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
@@ -444,6 +458,7 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
     for (const actor of actors) {
       await _applyEffects(actor, effect, { effectData, concentration });
     };
+    if (!game.settings.get(MODULE, 'allowTarget')) return;
     if (!targets.length) return;
     if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
     const origin = effect.uuid;
@@ -454,10 +469,11 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
 
 /**
  * Apply effect, or refresh its duration (and level) if it exists
- * @param {Actor5e} actor                The actor to create the effect on.
- * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {Actor5e} actor                          The actor to create the effect on.
+ * @param {ActiveEffect5e} effect                  The effect to create.
+ * @param {object} [options]                       Additional data that may be included with the effect.
+ * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
  */
 export async function _applyEffects(actor, effect, { effectData, concentration }) {
 
@@ -509,9 +525,10 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
 
 /**
  * Apply damage
- * @param {string} id      The id of the actor to apply damage to.
- * @param {object} options The options provided by the tray, primarily the multiplier.
- * @param {array} damage   An array of objects with the damage type and value that also contain Sets with damage properties.
+ * @param {string} id       The id of the actor to apply damage to.
+ * @param {object} options  The options provided by the tray, primarily the multiplier.
+ * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
+ *                                                             value that also contain Sets with damage properties.
  */
 async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
@@ -536,8 +553,8 @@ export async function _scroll(mid) {
 
 /**
  * Sort tokens into owned and unowned categories.
- * @param {Set|array} targets The set or array of tokens to be sorted.
- * @returns {array}           An Array of length two whose elements are the partitioned pieces of the original
+ * @param {Set|Token[]} targets The set or array of tokens to be sorted.
+ * @returns {Array}             An Array of length two whose elements are the partitioned pieces of the original
  */
 export function partitionTargets(targets) {
   const result = targets.reduce((acc, t) => {
