@@ -527,8 +527,8 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
  * Apply damage
  * @param {string} id       The id of the actor to apply damage to.
  * @param {object} options  The options provided by the tray, primarily the multiplier.
- * @param {Array<Record<string, unknown> | Set<unknown>>} damage An array of objects 
- *        with the damage type and value that also contain Sets with damage properties.
+ * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
+ *                                                             value that also contain Sets with damage properties.
  */
 async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
