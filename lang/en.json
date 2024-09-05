@@ -14,6 +14,7 @@
     "FilterDispositionSettingHint": "Hide effects from users if they originate from tokens with the selected (or worse) disposition.",
     "FilterPermissionSettingName": "Filter by Permission",
     "FilterPermissionSettingHint": "Hide effects from users if they originate from actors which the users lack the selected permissions (or below) for.",
+    "GmOnly": "GM Only",
     "IgnoreNPCSettingName": "Filter NPCs",
     "IgnoreNPCSettingHint": "Hide effects from users if they originate from NPCs they do not own.",
     "MultipleConcentrationEffectsSettingName": "Multiple Effects with Concentration",

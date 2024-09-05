@@ -62,7 +62,9 @@ export class ModuleSettings {
       choices: {
         0: "EFFECTIVETRAY.NoFilter",
         1: "OWNERSHIP.LIMITED",
-        2: "OWNERSHIP.OBSERVER"
+        2: "OWNERSHIP.OBSERVER",
+        3: "OWNERSHIP.OWNER",
+        4: "EFFECTIVETRAY.GmOnly"
       }
     });
 
@@ -80,6 +82,17 @@ export class ModuleSettings {
         2: "TOKEN.DISPOSITION.HOSTILE",
         3: "TOKEN.DISPOSITION.NEUTRAL"
       }
+    });
+
+    game.settings.register(MODULE, "multipleConcentrationEffects", {
+      name: "EFFECTIVETRAY.MultipleConcentrationEffectsSettingName",
+      hint: "EFFECTIVETRAY.MultipleConcentrationEffectsSettingHint",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: false,
+      requiresReload: false,
+      onChange: false
     });
 
     game.settings.register(MODULE, "systemDefault", {
@@ -133,17 +146,6 @@ export class ModuleSettings {
       config: true,
       type: Boolean,
       default: true,
-      requiresReload: false,
-      onChange: false
-    });
-
-    game.settings.register(MODULE, "multipleConcentrationEffects", {
-      name: "EFFECTIVETRAY.MultipleConcentrationEffectsSettingName",
-      hint: "EFFECTIVETRAY.MultipleConcentrationEffectsSettingHint",
-      scope: "world",
-      config: true,
-      type: Boolean,
-      default: false,
       requiresReload: false,
       onChange: false
     });

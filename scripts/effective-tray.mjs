@@ -59,21 +59,23 @@ export class EffectiveTray {
         effects = effects?.filter(e => !e.transfer);
         if (!effects?.length || foundry.utils.isEmpty(effects)) return;
         if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
-        const actor = item.parent;
+        const actor = message.getAssociatedActor();
 
         // Handle filtering
         if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
         const filterDis = game.settings.get(MODULE, "filterDisposition");
         if (filterDis) {
           const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
-          if (token && filterDis === 3 && token.disposition <= 0 && !token?.isOwner) return;
-          else if (token && filterDis === 2 && token.disposition <= -1 && !token?.isOwner) return;
-          else if (token && filterDis === 1 && token.disposition <= -2 && !token?.isOwner) return;
+          if (token && filterDis === 3 && token.disposition <= CONST.TOKEN_DISPOSITIONS.NEUTRAL && !token?.isOwner) return;
+          else if (token && filterDis === 2 && token.disposition <= CONST.TOKEN_DISPOSITIONS.HOSTILE && !token?.isOwner) return;
+          else if (token && filterDis === 1 && token.disposition <= CONST.TOKEN_DISPOSITIONS.SECRET && !token?.isOwner) return;
         }
         const filterPer = game.settings.get(MODULE, "filterPermission");
         if (filterPer) {
           if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
           else if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+          else if (filterPer === 3 && !actor?.isOwner) return;
+          else if (filterPer === 4 && !game.user.isGM) return;
         }
 
         // Replace the effects tray
@@ -147,7 +149,7 @@ export class EffectiveTray {
       if (html.querySelector(".et-uncollapsed")) {
         tray.classList.toggle("et-uncollapsed");
         tray.classList.remove("collapsed");
-        el.open = !el.open;
+        el.toggleAttribute("open");
       };
     });
 
@@ -220,13 +222,14 @@ export class EffectiveTray {
   /*  Effect Handling                             */
   /* -------------------------------------------- */
 
-  /**
-   * Apply effect, or refresh its duration (and level) if it exists
-   * @param {ActiveEffect5e} effect        The effect to create.
-   * @param {Actor5e} actor                The actor to create the effect on.
-   * @param {object} effectData            A generic data object that contains flags (currently scaling and spellLevel).
-   * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
-   */
+/**
+ * Apply effect, or refresh its duration (and level) if it exists
+ * @param {Actor5e} actor                          The actor to create the effect on.
+ * @param {ActiveEffect5e} effect                  The effect to create.
+ * @param {object} [options]                       Additional data that may be included with the effect.
+ * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+ */
   static async applyEffectToActor(effect, actor, { effectData, concentration }) {
     const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
 
@@ -279,12 +282,13 @@ export class EffectiveTray {
   /*  Damage Handling                             */
   /* -------------------------------------------- */
 
-  /**
-   * Apply damage
-   * @param {string} id      The id of the actor to apply damage to.
-   * @param {object} options The options provided by the tray, primarily the multiplier.
-   * @param {array} damage   An array of objects with the damage type and value that also contain Sets with damage properties.
-   */
+/**
+ * Apply damage
+ * @param {string} id       The id of the actor to apply damage to.
+ * @param {object} options  The options provided by the tray, primarily the multiplier.
+ * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
+ *                                                             value that also contain Sets with damage properties.
+ */
   static async applyTargetDamage(id, options, damage) {
     const actor = fromUuidSync(id);
     await actor.applyDamage(damage, options);
@@ -347,8 +351,8 @@ export class EffectiveTray {
 
   /**
    * Sort tokens into owned and unowned categories.
-   * @param {Set|array} targets The set or array of tokens to be sorted.
-   * @returns {array}           An Array of length two whose elements are the partitioned pieces of the original
+   * @param {Set|Token[]} targets The set or array of tokens to be sorted.
+   * @returns {Array}             An Array of length two whose elements are the partitioned pieces of the original
    */
   static partitionTargets(targets) {
     const result = targets.reduce((acc, t) => {
