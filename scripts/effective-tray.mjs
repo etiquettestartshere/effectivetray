@@ -87,27 +87,28 @@ export class effectiveTray {
   static async _effectTray(message, html) {
     const tray = html.querySelector('.effects-tray');
     if (!tray) return;
-    const uuid = foundry.utils.getProperty(message, "flags.dnd5e.use.itemUuid");
-    if (!uuid) return;
-    const item = await fromUuid(uuid);
+    const item = message.getAssociatedItem();
+    if (!item) return;
     const effects = item?.effects?.contents;
     if (foundry.utils.isEmpty(effects)) return;
     if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
-    const actor = item.parent;
+    const actor = message.getAssociatedActor();
 
     // Handle filtering
     if (game.settings.get(MODULE, "ignoreNPC") && actor?.type === "npc" && !actor?.isOwner) return;
     const filterDis = game.settings.get(MODULE, "filterDisposition");
     if (filterDis) {
       const token = game.scenes?.get(message.speaker?.scene)?.tokens?.get(message.speaker?.token);
-      if (token && filterDis === 3 && token.disposition <= 0 && !token?.isOwner) return;
-      else if (token && filterDis === 2 && token.disposition <= -1 && !token?.isOwner) return;
-      else if (token && filterDis === 1 && token.disposition <= -2 && !token?.isOwner) return;
+      if (token && filterDis === 3 && token.disposition <= CONST.TOKEN_DISPOSITIONS.NEUTRAL && !token?.isOwner) return;
+      else if (token && filterDis === 2 && token.disposition <= CONST.TOKEN_DISPOSITIONS.HOSTILE && !token?.isOwner) return;
+      else if (token && filterDis === 1 && token.disposition <= CONST.TOKEN_DISPOSITIONS.SECRET && !token?.isOwner) return;
     }
     const filterPer = game.settings.get(MODULE, "filterPermission");
     if (filterPer) {
       if (filterPer === 1 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED)) return;
       else if (filterPer === 2 && !actor?.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER)) return;
+      else if (filterPer === 3 && !actor?.isOwner) return;
+      else if (filterPer === 4 && !game.user.isGM) return;
     }
 
     // Replace the effects in the tray
@@ -129,7 +130,7 @@ export class effectiveTray {
       if (effect.transfer === true) continue;
       const label = effect.duration.duration ? effect.duration.label : "";
       const contents = `
-        <li class="effect" data-uuid=${uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
+        <li class="effect" data-uuid=${item.uuid}.ActiveEffect.${effect.id} data-transferred=${effect.transfer}>
           <img class="gold-icon" alt=${effect.name} src=${effect.img}>
           <div class="name-stacked">
             <span class="title">${effect.name}</span>
@@ -148,7 +149,7 @@ export class effectiveTray {
       tray.querySelector('ul.effects.unlist').insertAdjacentHTML("beforeend", contents);
 
       // Handle click events
-      tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
+      tray.querySelector(`li[data-uuid="${item.uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
         .addEventListener('click', async () => {
           const mode = tray.querySelector(`[aria-pressed="true"]`)?.dataset?.mode;
           if (!mode || mode === "selected") {
@@ -165,7 +166,7 @@ export class effectiveTray {
 
       // Handle legacy targeting mode
       if (game.settings.get(MODULE, "allowTarget") && game.settings.get(MODULE, "contextTarget")) {
-        tray.querySelector(`li[data-uuid="${uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
+        tray.querySelector(`li[data-uuid="${item.uuid}.ActiveEffect.${effect.id}"]`)?.querySelector("button")
           .addEventListener('contextmenu', async function (event) {
             event.stopPropagation();
             event.preventDefault();
@@ -346,8 +347,7 @@ export class effectiveDamage {
       if (html.querySelector(".damage-tray.et-uncollapsed")) {
         tray.classList.toggle("et-uncollapsed");
         tray.classList.toggle("collapsed");
-        damageEl.open = !damageEl.open;
-
+        damageEl.toggleAttribute("open");
       };
     });
   }
@@ -436,9 +436,10 @@ async function _damageSocket(request) {
  * Handle applying effects to targets: handle it if you can handle it, else make a request via socket
  * @param {HTMLElement} tray             HTML element that composes the collapsible tray.
  * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
- * @param {string} caster                The Uuid of the actor which originally cast the spell requiring concentration.
+ * @param {object} [options]             Additional data that may be included with the effect.
+ * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {string} [options.caster]                The Uuid of the actor which originally cast the spell requiring concentration.
  */
 async function _effectApplicationHandler(tray, effect, { effectData, concentration, caster }) {
   if (!game.user.targets.size) return ui.notifications.info(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoTarget"));
@@ -468,10 +469,11 @@ async function _effectApplicationHandler(tray, effect, { effectData, concentrati
 
 /**
  * Apply effect, or refresh its duration (and level) if it exists
- * @param {Actor5e} actor                The actor to create the effect on.
- * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} effectData            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} concentration The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {Actor5e} actor                          The actor to create the effect on.
+ * @param {ActiveEffect5e} effect                  The effect to create.
+ * @param {object} [options]                       Additional data that may be included with the effect.
+ * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+ * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
  */
 export async function _applyEffects(actor, effect, { effectData, concentration }) {
 
@@ -523,9 +525,10 @@ export async function _applyEffects(actor, effect, { effectData, concentration }
 
 /**
  * Apply damage
- * @param {string} id      The id of the actor to apply damage to.
- * @param {object} options The options provided by the tray, primarily the multiplier.
- * @param {array} damage   An array of objects with the damage type and value that also contain Sets with damage properties.
+ * @param {string} id       The id of the actor to apply damage to.
+ * @param {object} options  The options provided by the tray, primarily the multiplier.
+ * @param {Array<Record<string, unknown> | Set<unknown>>} damage An array of objects 
+ *        with the damage type and value that also contain Sets with damage properties.
  */
 async function _applyTargetDamage(id, options, damage) {
   const actor = fromUuidSync(id);
@@ -550,8 +553,8 @@ export async function _scroll(mid) {
 
 /**
  * Sort tokens into owned and unowned categories.
- * @param {Set|array} targets The set or array of tokens to be sorted.
- * @returns {array}           An Array of length two whose elements are the partitioned pieces of the original
+ * @param {Set|Token[]} targets The set or array of tokens to be sorted.
+ * @returns {Array}             An Array of length two whose elements are the partitioned pieces of the original
  */
 export function partitionTargets(targets) {
   const result = targets.reduce((acc, t) => {
