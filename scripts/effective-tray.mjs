@@ -195,7 +195,8 @@ export class EffectiveTray {
    * Scroll tray to bottom if at bottom
    * @param {string} mid The message id.
    */
-  static async _scroll(mid) {
+  static async _scroll(mid, delay) {
+    if (delay) new Promise(r => setTimeout(r, 10));
     if (mid !== game.messages.contents.at(-1).id) return;
     if (window.ui.chat.isAtBottom) {
       await new Promise(r => setTimeout(r, 256));

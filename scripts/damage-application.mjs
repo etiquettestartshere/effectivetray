@@ -56,6 +56,11 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
+
+    //Handle scrolling
+    if (!game.settings.get(MODULE, "scrollOnExpand")) return;
+    let delay = true;
+    EffectiveTray._scroll(messageId, delay);
   }
 
   /** @override */

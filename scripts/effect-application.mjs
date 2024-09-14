@@ -53,6 +53,11 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     }
 
     this.targetingMode = this.targetSourceControl.hidden ? "selected" : "targeted";
+
+    //Handle scrolling
+    if (!game.settings.get(MODULE, "scrollOnExpand")) return;
+    let delay = true;
+    EffectiveTray._scroll(messageId, delay);
   }
 
   /* -------------------------------------------- */
@@ -130,25 +135,28 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     concentration = this.chatMessage.getAssociatedActor()?.effects
       .get(this.chatMessage.getFlag("dnd5e", "use.concentrationId"));
 
+    const unownedTargets = [];
     for (const target of this.targetList.querySelectorAll("[data-target-uuid]")) {
       const actor = fromUuidSync(target.dataset.targetUuid);
       if (!actor || !target.querySelector("dnd5e-checkbox")?.checked) continue;
       try {
         if (actor.isOwner) await this._applyEffectToActor(effect, actor, { effectData, concentration });
         else {
-          if (!game.settings.get(MODULE, 'allowTarget')) return;
-          if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
-          const source = effect.uuid;
-          const con = concentration?.id;
-          const targets = [target.dataset.targetUuid];
-          console.log(targets);
-          const caster = this.chatMessage.getAssociatedActor().uuid;
-          await game.socket.emit(SOCKET_ID, { type: "effect", data: { source, targets, effectData, con, caster } });
+         if (game.settings.get(MODULE, 'allowTarget')) unownedTargets.push(target.dataset.targetUuid);
         }
       } catch (err) {
         Hooks.onError("EffectApplicationElement._applyEffectToToken", err, { notify: "warn", log: "warn" });
       }
     }
+
     this.querySelector(".collapsible").dispatchEvent(new PointerEvent("click", { bubbles: true, cancelable: true }));
+
+    // Unowned targets handling
+    if (!game.settings.get(MODULE, 'allowTarget')) return;
+    if (!game.users.activeGM) return ui.notifications.warn(game.i18n.localize("EFFECTIVETRAY.NOTIFICATION.NoActiveGMEffect"));
+    const source = effect.uuid;
+    const con = concentration?.id;
+    const caster = this.chatMessage.getAssociatedActor().uuid;
+    await game.socket.emit(SOCKET_ID, { type: "effect", data: { source, targets: unownedTargets, effectData, con, caster } });
   }
 }
