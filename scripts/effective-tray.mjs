@@ -54,6 +54,7 @@ export class EffectiveTray {
         if (message.getFlag("dnd5e", "messageType") === "usage") {
           effects = message?.getFlag("dnd5e", "use.effects")?.map(id => item?.effects.get(id))
         } else {
+          if (message.getFlag("dnd5e", "roll.type")) return;
           effects = item?.effects.filter(e => (e.type !== "enchantment") && !e.getFlag("dnd5e", "rider"));
         }
         effects = effects?.filter(e => !e.transfer);
