@@ -26,7 +26,7 @@
       "NoTarget": "You don't have a target."
     },
     "RemoveTransferSettingName": "Remove 'Apply Effect to Actor'",
-    "RemoveTransferSettingHint": "On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
+    "RemoveTransferSettingHint": "On the time of creation (i.e. drag & drop, item grant advancement), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer.",
     "ScrollOnExpandSettingName": "Scroll on Expand",
     "ScrollOnExpandSettingHint": "Scroll chat to bottom when expanding a tray that is at the bottom.",
     "SystemDefaultSettingName": "Use Default Effects Tray",
