@@ -2,7 +2,7 @@
 A module for dnd5e on foundryvtt that allows the effects and damage trays to be used more effectively.
 
 ## Effects Tray 
-Allows users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own. If using this feature (which is on by default), left click to apply effects to selected tokens that the user owns (as the system's default behavior), or right click to apply effects to tokens that the user does not own.
+Allows users to use the effect tray as much or as little as wanted by the GM, up to and including transferal to targets they do not own. User ability to transfer effects to and from any target is on by default.
 ## Damage Tray
 Allows users to use the damage tray for selected tokens that they own, and for targeted tokens (either that they own, or ones they don't own with a setting). User ability to use the damage tray is on by default, but unless the relevant setting is selected, they cannot damage targets.
 
@@ -18,7 +18,7 @@ Allows users to use the damage tray for selected tokens that they own, and for t
 - **Remove 'Apply Effect to Actor'**: On the time of creation (i.e. drag & drop), remove 'Apply Effect to Actor' from effects on items that have a duration to allow for normal use of the timer (on by default).
 
 ## Additional Features
-- Flags enchantment effects with their spellLevel
+- Flags enchantment effects with their spellLevel.
 
 ## API
 Now includes three helper functions exposed in the global scope under `effectiv`, `effectiv.applyEffect`, `effectiv.applyDamage` and `effective.partitionTargets`. These functions *have not been heavily tested* and are included now in the hopes that, if someone wants to use them, they will also test them for issues.
