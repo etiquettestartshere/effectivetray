@@ -343,6 +343,7 @@ export class EffectiveTray {
    * @returns {boolean}
    */
   static ownershipCheck(targets) {
+    if (!targets) return false;
     for (const target of targets) {
       const actor = fromUuidSync(target.uuid);
       if (actor?.isOwner) return true;
