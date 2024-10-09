@@ -329,7 +329,7 @@ export class EffectiveTray {
    * @param {object} data                     The initial data object provided to the request.
    * @param {DatabaseCreateOperation} options Additional options which modify the creation request.
    */
-  static async _enchantmentSpellLevel(effect, data, options) {
+  static _enchantmentSpellLevel(effect, data, options) {
     if (!effect.isAppliedEnchantment) return;
     const msg = game.messages.get(options.chatMessageOrigin);
     const lvl = msg.flags?.dnd5e?.use?.spellLevel;
