@@ -59,7 +59,7 @@ export class EffectiveTray {
         }
         effects = effects?.filter(e => !e.transfer);
         if (!effects?.length || foundry.utils.isEmpty(effects)) return;
-        if (!effects.some(e => e.flags?.dnd5e?.type !== "enchantment")) return;
+        if (!effects.some(e => e.type !== "enchantment")) return;
         const actor = message.getAssociatedActor();
 
         // Handle filtering
@@ -301,18 +301,23 @@ export class EffectiveTray {
   /* -------------------------------------------- */
 
   /**
-   * Remove transfer from all effects with duration
-   * @param {Item} item The item from which to remove "transfer": true.
+   * Remove transfer and suspended from all effects with duration
+   * @param {Item} item The item with the effect from which to remove "transfer": true and "disabled": true.
    */
   static _removeTransfer(item) {
     if (!game.settings.get(MODULE, "removeTransfer")) return;
     const effects = item.effects.contents;
     if (!effects) return;
     for (const effect of effects) {
+      if (effect.type === "enchantment") continue;
+      if (effect.getFlag("dnd5e", "rider")) continue;
       const transfer = effect.transfer;
       const duration = effect.duration;
+      const disabled = effect.disabled;
       if (transfer && (duration.seconds || duration.turns || duration.rounds)) {
-        effect.updateSource({ "transfer": false });
+        let updates = { "transfer": !transfer };
+        if (disabled) foundry.utils.mergeObject(updates, { "disabled": !disabled });
+        effect.updateSource(updates);
       };
     };
   }
@@ -324,7 +329,7 @@ export class EffectiveTray {
    * @param {object} data                     The initial data object provided to the request.
    * @param {DatabaseCreateOperation} options Additional options which modify the creation request.
    */
-  static async _enchantmentSpellLevel(effect, data, options) {
+  static _enchantmentSpellLevel(effect, data, options) {
     if (!effect.isAppliedEnchantment) return;
     const msg = game.messages.get(options.chatMessageOrigin);
     const lvl = msg.flags?.dnd5e?.use?.spellLevel;
