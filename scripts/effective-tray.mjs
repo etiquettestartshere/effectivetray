@@ -110,7 +110,7 @@ export class EffectiveTray {
   static _damageTray(message, html) {
     if (message.rolls.some(r => r instanceof CONFIG.Dice.DamageRoll)) {
       if (!game.user.isGM) {
-        if (message.whisper.length && !message.whisper.includes(game.user.id)) return;
+        if ((!message.isAuthor || message.blind) && message.whisper.length && !message.whisper.includes(game.user.id)) return;
         const damageApplication = document.createElement("effective-damage-application");
         damageApplication.classList.add("dnd5e2");
         damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
