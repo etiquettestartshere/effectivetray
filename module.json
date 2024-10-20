@@ -1,7 +1,7 @@
 {
   "id": "effectivetray",
   "title": "Effective Tray",
-  "version": "4.0.7",
+  "version": "4.1.0",
   "compatibility": {
     "minimum": "12",
     "verified": "12"
@@ -13,7 +13,7 @@
       {
         "id": "dnd5e",
         "type": "system",
-        "compatibility": {"minimum": "4.0.0", "maximum": "4.0.9999"}
+        "compatibility": {"minimum": "4.1.0", "maximum": "4.1.9999"}
       }
     ]
   },

@@ -3,6 +3,15 @@ import { MODULE } from "./const.mjs";
 export class EffectiveTray {
   static init() {
 
+    // Define tray types, including module types
+    dnd5e.documents.ChatMessage5e.TRAY_TYPES = [
+      "damage-application",
+      "enchantment-application",
+      "effect-application",
+      "effective-damage-application",
+      "effective-effect-application"
+    ];
+
     // Modify the effects tray
     if (!game.settings.get(MODULE, "systemDefault")) {
       EffectiveTray._effectTrayOverride();
@@ -178,12 +187,12 @@ export class EffectiveTray {
       // Collapse chat message trays older than 5 minutes
       case "older": collapse = message.timestamp < Date.now() - (5 * 60 * 1000); break;
     };
-    for (const tray of html.querySelectorAll(".card-tray, .effects-tray")) {
-      tray.classList.toggle("collapsed", collapse);
+    for (const tray of html.querySelectorAll(".card-tray")) {
+      tray.classList.toggle("collapsed", message._trayStates?.get(tray.className.replace(" collapsed", "")) ?? collapse);
     };
-    for (const element of html.querySelectorAll("effective-damage-application, effective-effect-application")) {
-      element.toggleAttribute("open", !collapse);
-    };
+    for (const element of html.querySelectorAll(dnd5e.documents.ChatMessage5e.TRAY_TYPES.join(", "))) {
+      element.toggleAttribute("open", message._trayStates?.get(element.tagName) ?? !collapse);
+    }
   }
 
   // Scroll chat to bottom on ready if any trays have been expanded
@@ -224,14 +233,14 @@ export class EffectiveTray {
   /*  Effect Handling                             */
   /* -------------------------------------------- */
 
-/**
- * Apply effect, or refresh its duration (and level) if it exists
- * @param {Actor5e} actor                          The actor to create the effect on.
- * @param {ActiveEffect5e} effect                  The effect to create.
- * @param {object} [options]                       Additional data that may be included with the effect.
- * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
- */
+  /**
+   * Apply effect, or refresh its duration (and level) if it exists
+   * @param {Actor5e} actor                          The actor to create the effect on.
+   * @param {ActiveEffect5e} effect                  The effect to create.
+   * @param {object} [options]                       Additional data that may be included with the effect.
+   * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+   * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+   */
   static async applyEffectToActor(effect, actor, { effectData, concentration }) {
     const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
 
@@ -284,13 +293,13 @@ export class EffectiveTray {
   /*  Damage Handling                             */
   /* -------------------------------------------- */
 
-/**
- * Apply damage
- * @param {string} id       The id of the actor to apply damage to.
- * @param {object} options  The options provided by the tray, primarily the multiplier.
- * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
- *                                                             value that also contain Sets with damage properties.
- */
+  /**
+   * Apply damage
+   * @param {string} id       The id of the actor to apply damage to.
+   * @param {object} options  The options provided by the tray, primarily the multiplier.
+   * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
+   *                                                             value that also contain Sets with damage properties.
+   */
   static async applyTargetDamage(id, options, damage) {
     const actor = fromUuidSync(id);
     await actor.applyDamage(damage, options);
