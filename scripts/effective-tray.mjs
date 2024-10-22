@@ -108,19 +108,17 @@ export class EffectiveTray {
    * @param {HTMLElement} html      HTML contents of the message.
    */
   static _damageTray(message, html) {
-    if (message.rolls.some(r => r instanceof CONFIG.Dice.DamageRoll)) {
-      if (!game.user.isGM) {
-        if ((!message.isAuthor || message.blind) && message.whisper.length && !message.whisper.includes(game.user.id)) return;
-        const damageApplication = document.createElement("effective-damage-application");
-        damageApplication.classList.add("dnd5e2");
-        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
-          value: roll.total,
-          type: roll.options.type,
-          properties: new Set(roll.options.properties ?? [])
-        }));
-        html.querySelector(".message-content").appendChild(damageApplication);
-      };
-    };
+    if (!message.isContentVisible || game.user.isGM) return;
+    const rolls = message.rolls.filter(r => r instanceof CONFIG.Dice.DamageRoll);
+    if (!rolls.length) return;
+    const damageApplication = document.createElement("effective-damage-application");
+    damageApplication.classList.add("dnd5e2");
+    damageApplication.damages = dnd5e.dice.aggregateDamageRolls(rolls, { respectProperties: true }).map(roll => ({
+      value: roll.total,
+      type: roll.options.type,
+      properties: new Set(roll.options.properties ?? [])
+    }));
+    html.querySelector(".message-content").appendChild(damageApplication);
   }
 
   /**
