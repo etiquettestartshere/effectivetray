@@ -113,11 +113,18 @@ export class EffectiveTray {
         if ((!message.isAuthor || message.blind) && message.whisper.length && !message.whisper.includes(game.user.id)) return;
         const damageApplication = document.createElement("effective-damage-application");
         damageApplication.classList.add("dnd5e2");
-        damageApplication.damages = dnd5e.dice.aggregateDamageRolls(message.rolls, { respectProperties: true }).map(roll => ({
-          value: roll.total,
-          type: roll.options.type,
-          properties: new Set(roll.options.properties ?? [])
-        }));
+        damageApplication.damages = dnd5e.dice
+          .aggregateDamageRolls(
+            message.rolls.filter(
+              (roll) => roll.constructor.name == "DamageRoll"
+            ),
+            { respectProperties: true }
+          )
+          .map((roll) => ({
+            value: roll.total,
+            type: roll.options.type,
+            properties: new Set(roll.options.properties ?? []),
+          }));
         html.querySelector(".message-content").appendChild(damageApplication);
       };
     };
