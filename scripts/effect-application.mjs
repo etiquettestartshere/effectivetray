@@ -159,20 +159,4 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     const caster = this.chatMessage.getAssociatedActor().uuid;
     await game.socket.emit(SOCKET_ID, { type: "effect", data: { source, targets: unownedTargets, effectData, con, caster } });
   }
-
-
-  /* -------------------------------------------- */
-
-  /**
-   * Handle clicks to the collapsible header.
-   * @param {PointerEvent} event  Triggering click event.
-   */
-  _handleClickHeader(event) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    if (!event.target.closest(".collapsible-content")) {
-      if (event.target.closest('.et-uncollapsed')) this.removeAttribute("open");
-      else this.toggleAttribute("open");
-    }  
-  }
 }
