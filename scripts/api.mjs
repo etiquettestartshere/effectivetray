@@ -1,4 +1,7 @@
 import { SOCKET_ID } from "./const.mjs";
+import EffectiveEAE from "./effect-application.mjs";
+import EffectiveDAE from "./damage-application.mjs";
+import { EffectiveSocket } from "./effective-socket.mjs";
 import { EffectiveTray } from "./effective-tray.mjs";
 
 export class API {
@@ -8,7 +11,17 @@ export class API {
       applyEffect: API.applyEffect,
       applyDamage: API.applyDamage,
       partitionTargets: EffectiveTray.partitionTargets,
-      scroll: EffectiveTray._scroll
+      scroll: EffectiveTray._scroll,
+      abstract: {
+        elements: {
+          effectiveEffectApplication: EffectiveEAE,
+          effectiveDamageApplication: EffectiveDAE
+        },
+        utils: {
+          effectiveTray: EffectiveTray,
+          effectiveSocket: EffectiveSocket
+        }
+      }
     };
   }
 

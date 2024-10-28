@@ -24,7 +24,7 @@ export default class EffectiveDAE extends dnd5e.applications.components.DamageAp
     // Build the frame HTML only once
     if (!this.targetList) {
       const div = document.createElement("div");
-      div.classList.add("card-tray", "damage-tray", "collapsible");
+      div.classList.add("card-tray", "damage-tray", "collapsible", "effective-tray");
       if (!this.open) div.classList.add("collapsed");
       div.innerHTML = `
         <label class="roboto-upper">
