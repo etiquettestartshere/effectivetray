@@ -3,13 +3,15 @@ import { MODULE } from "./const.mjs";
 export class EffectiveTray {
   static init() {
 
-    // Modify the effects tray
+    // Override header click behavior
     if (game.settings.get(MODULE, "dontCloseOnPress")) {
       EffectiveTray._effectTrayClickOverride();
-    };
+    }
+
+    // Modify the effects tray
     if (!game.settings.get(MODULE, "systemDefault")) {
       EffectiveTray._effectTrayOverride();
-    };
+    }
 
     // Add dependent effect to a concentration effect.
     Hooks.on("createActiveEffect", EffectiveTray.#addDependent);
@@ -17,7 +19,7 @@ export class EffectiveTray {
     // Modify the damage tray
     if (!game.settings.get(MODULE, "damageDefault")) {
       Hooks.on("dnd5e.renderChatMessage", EffectiveTray._damageTray);
-    };
+    }
 
     // Handle expand/collapse/scroll
     Hooks.on("dnd5e.renderChatMessage", EffectiveTray._collapseHandler);
@@ -27,7 +29,7 @@ export class EffectiveTray {
     const collapseSetting = game.settings.get("dnd5e", "autoCollapseChatTrays")
     if (collapseSetting === "older" || collapseSetting === "never") {
       Hooks.on("ready", EffectiveTray._readyScroll);
-    };
+    }
 
     // Misc
     Hooks.on("preCreateItem", EffectiveTray._removeTransfer);
