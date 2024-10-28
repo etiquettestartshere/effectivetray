@@ -249,14 +249,14 @@ export class EffectiveTray {
   /*  Effect Handling                             */
   /* -------------------------------------------- */
 
-/**
- * Apply effect, or refresh its duration (and level) if it exists
- * @param {Actor5e} actor                          The actor to create the effect on.
- * @param {ActiveEffect5e} effect                  The effect to create.
- * @param {object} [options]                       Additional data that may be included with the effect.
- * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
- */
+  /**
+   * Apply effect, or refresh its duration (and level) if it exists
+   * @param {Actor5e} actor                          The actor to create the effect on.
+   * @param {ActiveEffect5e} effect                  The effect to create.
+   * @param {object} [options]                       Additional data that may be included with the effect.
+   * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
+   * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+   */
   static async applyEffectToActor(effect, actor, { effectData, concentration }) {
     const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
 
@@ -309,13 +309,13 @@ export class EffectiveTray {
   /*  Damage Handling                             */
   /* -------------------------------------------- */
 
-/**
- * Apply damage
- * @param {string} id       The id of the actor to apply damage to.
- * @param {object} options  The options provided by the tray, primarily the multiplier.
- * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
- *                                                             value that also contain Sets with damage properties.
- */
+  /**
+   * Apply damage
+   * @param {string} id       The id of the actor to apply damage to.
+   * @param {object} options  The options provided by the tray, primarily the multiplier.
+   * @param {Array<Record<string, unknown>|Set<unknown>>} damage An array of objects with the damage type and 
+   *                                                             value that also contain Sets with damage properties.
+   */
   static async applyTargetDamage(id, options, damage) {
     const actor = fromUuidSync(id);
     await actor.applyDamage(damage, options);
