@@ -22,7 +22,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     // Build the frame HTML only once
     if (!this.effectsList || !this.targetList) {
       const div = document.createElement("div");
-      div.classList.add("card-tray", "effects-tray", "collapsible");
+      div.classList.add("card-tray", "effects-tray", "collapsible", "effective-tray");
       if (!this.open) div.classList.add("collapsed");
       div.innerHTML = `
         <label class="roboto-upper">
@@ -101,7 +101,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
    */
   /** @override */
   async _applyEffectToActor(effect, actor, { effectData, concentration }) {
-    const applied = EffectiveTray.applyEffectToActor(effect, actor, {effectData, concentration });
+    const applied = EffectiveTray.applyEffectToActor(effect, actor, { effectData, concentration });
     return applied;
   }
 
@@ -117,7 +117,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     event.preventDefault();
     const effect = this.chatMessage.getAssociatedItem()?.effects.get(event.target.closest("[data-id]")?.dataset.id);
     if (!effect) return;
-    
+
     // Override to handle tray collapse behavior
     const tray = event.target.closest('.effects-tray');
     EffectiveTray._checkTray(tray);
@@ -142,7 +142,7 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
       try {
         if (actor.isOwner) await this._applyEffectToActor(effect, actor, { effectData, concentration });
         else {
-         if (game.settings.get(MODULE, 'allowTarget')) unownedTargets.push(target.dataset.targetUuid);
+          if (game.settings.get(MODULE, 'allowTarget')) unownedTargets.push(target.dataset.targetUuid);
         }
       } catch (err) {
         Hooks.onError("EffectApplicationElement._applyEffectToToken", err, { notify: "warn", log: "warn" });
@@ -158,5 +158,21 @@ export default class EffectiveEAE extends dnd5e.applications.components.EffectAp
     const con = concentration?.id;
     const caster = this.chatMessage.getAssociatedActor().uuid;
     await game.socket.emit(SOCKET_ID, { type: "effect", data: { source, targets: unownedTargets, effectData, con, caster } });
+  }
+
+
+  /* -------------------------------------------- */
+
+  /**
+   * Handle clicks to the collapsible header.
+   * @param {PointerEvent} event  Triggering click event.
+   */
+  _handleClickHeader(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (!event.target.closest(".collapsible-content")) {
+      if (event.target.closest('.et-uncollapsed')) this.removeAttribute("open");
+      else this.toggleAttribute("open");
+    }  
   }
 }
