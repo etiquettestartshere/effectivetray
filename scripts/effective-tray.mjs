@@ -4,7 +4,9 @@ export class EffectiveTray {
   static init() {
 
     // Modify the effects tray
-    EffectiveTray._effectTrayClickOverride();
+    if (game.settings.get(MODULE, "dontCloseOnPress")) {
+      EffectiveTray._effectTrayClickOverride();
+    };
     if (!game.settings.get(MODULE, "systemDefault")) {
       EffectiveTray._effectTrayOverride();
     };
@@ -50,7 +52,7 @@ export class EffectiveTray {
         event.preventDefault();
         event.stopImmediatePropagation();
         if (!event.target.closest(".collapsible-content")) {
-          if (game.settings.get(MODULE, "dontCloseOnPress") && event.target.closest('.et-uncollapsed')) this.removeAttribute("open");
+          if (event.target.closest('.et-uncollapsed')) this.removeAttribute("open");
           else this.toggleAttribute("open");
         }
       }
