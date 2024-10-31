@@ -159,19 +159,21 @@ export class EffectiveTray {
     // Handle tray collapse behavior
     const tray = html.querySelector('.card-tray');
     if (!tray) return;
-    const button = tray.querySelector("button.apply-damage") || tray.querySelector("li.effect:has(.apply-effect)");
-    if (button) button.addEventListener('click', (event) => {
-      if (game.settings.get(MODULE, "dontCloseOnPress")) {
-        event.preventDefault();
-        tray.classList.remove("collapsed");
-        tray.classList.add("et-uncollapsed");
-      } else {
-        if (html.querySelector(".card-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
-      };
-    });
+    const buttons = tray.querySelectorAll("button.apply-damage, li.effect:has(.apply-effect)");
+    if (buttons) for (const button of buttons) {
+      button.addEventListener('click', (event) => {
+        if (game.settings.get(MODULE, "dontCloseOnPress")) {
+          event.preventDefault();
+          tray.classList.remove("collapsed");
+          tray.classList.add("et-uncollapsed");
+        } else {
+          if (html.querySelector(".card-tray.et-uncollapsed")) tray.classList.toggle("et-uncollapsed");
+        };
+      });
+    };
     const upper = tray?.querySelector(".roboto-upper");
     const el = html.querySelector('effective-damage-application, damage-application, effective-effect-application, effect-application');
-    upper.addEventListener('click', () => {
+    if (upper) upper.addEventListener('click', () => {
       if (html.querySelector(".et-uncollapsed")) {
         tray.classList.toggle("et-uncollapsed");
         tray.classList.remove("collapsed");
