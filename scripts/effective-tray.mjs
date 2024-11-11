@@ -41,7 +41,6 @@ export class EffectiveTray {
   /* -------------------------------------------- */
 
   static _effectTrayClickOverride() {
-
     const cls = dnd5e.applications.components.EffectApplicationElement;
     class handler extends cls {
 
@@ -262,10 +261,6 @@ export class EffectiveTray {
   static async applyEffectToActor(effect, actor, { effectData, concentration }) {
     const origin = game.settings.get(MODULE, "multipleConcentrationEffects") ? effect : concentration ?? effect;
 
-    // Call the pre effect hook; returning `false` will terminate the function
-    const preCallback = Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
-    if (!preCallback) return;
-
     // Enable an existing effect on the target if it originated from this effect
     const existingEffect = game.settings.get(MODULE, "multipleConcentrationEffects") ?
       actor.effects.find(e => e.origin === effect.uuid) :
@@ -291,6 +286,11 @@ export class EffectiveTray {
         origin: origin.uuid
       }, effectData);
 
+      // Handle calling the pre hook
+      const hookData = EffectiveTray._hookHandler(effectData, actor, concentration);
+      if (hookData === false) return;
+      effectData = hookData;
+
       // Find an owner of the concentration effect and request that they add the dependent effect.
       const context = { parent: actor };
       if (concentration && !concentration.isOwner) {
@@ -300,11 +300,18 @@ export class EffectiveTray {
       const applied = await ActiveEffect.implementation.create(effectData, context);
       if (concentration && concentration.isOwner) await concentration.addDependent(applied);
 
-      // Call the effect hook
-      Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+      // Call the post hook
+      Hooks.callAll("effectiv.applyEffect", effectData, actor, concentration);
 
       return applied;
     };
+  }
+
+  // Synchronous hook handling
+  static _hookHandler(effectData, actor, concentration) {
+    const callback = Hooks.call("effectiv.preApplyEffect", effectData, actor, concentration);
+    if (callback === false) return false;
+    return effectData;
   }
 
   /* -------------------------------------------- */
