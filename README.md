@@ -129,30 +129,26 @@ effectiv.partitionTargets(targets)
 ```
 
 ## Hooks
-Now includes two hooks, `effectiv.preApplyEffect` and `effectiv.applyEffect`. The former allows the data to be modified and explicitly returning `false` will prevent the effect from being applied. The later passes the same (modified in the case of effectData), information in its final state upon application. 
+Now includes two hooks, `effectiv.preApplyEffect` and `effectiv.applyEffect`. The former allows the data of the first parameter to be modified and explicitly returning `false` will prevent the effect from being applied. The later passes the same information in its final state upon application. 
 
 These hooks have not been extensively tested.
 ```js
 /**
- * Hook called before the effect is completed and applied.
+ * Hook called before the effect is completed and applied.  
+ * @param {object} effectData            The effect data object before application. This object can be mutated.
  * @param {Actor5e} actor                The actor to create the effect on.
- * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} [options]             Additional data that may be included with the effect.
- * @param {object} [options.effectData]            A generic data object that contains spellLevel in a `dnd5e` scoped flag, and whatever else.
- * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {ActiveEffect5e} concentration The concentration effect on which the effect will be dependent, if it requires concentration.
  */
-Hooks.call("effectiv.preApplyEffect", actor, effect, { effectData, concentration });
+Hooks.call("effectiv.preApplyEffect", effectData, actor, concentration);
 ```
 ```js
 /**
  * Hook called before the effect is completed and applied. Same as above except for effectData.
+ * @param {object} effectData            The effect data object.
  * @param {Actor5e} actor                The actor to create the effect on.
- * @param {ActiveEffect5e} effect        The effect to create.
- * @param {object} [options]             Additional data that may be included with the effect.
- * @param {object} [options.effectData]            The packaged effect immediately before application.
- * @param {ActiveEffect5e} [options.concentration] The concentration effect on which `effect` is dependent, if it requires concentration.
+ * @param {ActiveEffect5e} concentration The concentration effect on which the effect will be dependent, if it requires concentration.
  */
-Hooks.callAll("effectiv.applyEffect", actor, effect, { effectData, concentration });
+Hooks.callAll("effectiv.applyEffect", effectData, actor, concentration);
 ```
 ___
 ###### **Technical Details**
